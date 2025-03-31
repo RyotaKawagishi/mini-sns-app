@@ -70,3 +70,6 @@ group :test do
   gem "guard",                    "2.18.0"
   gem "guard-minitest",           "2.4.6"
 end
+
+gem "bootstrap-sass",  "3.4.1"
+gem "sassc-rails",     "2.1.2"
