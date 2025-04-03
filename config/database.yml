@@ -23,6 +23,6 @@ test:
 production:
   <<: *default
   database: storage/production.sqlite3
-  adapter: postfresql
+  adapter: postgresql
   encoding: unicode
   url: <%= ENV["DATABASE_URL"] %>
