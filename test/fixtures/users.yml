@@ -1,0 +1,6 @@
+michael:
+  name: Michael Example
+  email: michael@example.com
+  password_digest: <%= User.digest('password') %>
+
+# ハッシュ化前の生のパスワードは"password"を使う

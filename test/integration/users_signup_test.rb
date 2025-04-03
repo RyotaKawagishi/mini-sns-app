@@ -21,6 +21,7 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     assert_select 'div#error_explanation'
   end
 
+  # ユーザー登録成功時のテスト
   test "valid signup information" do
     assert_difference 'User.count', 1 do
       post users_path, params: { user: { name:  "Example User",
@@ -32,5 +33,8 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_template 'users/show'
     assert_not flash.blank?
+
+    # 登録後に自動ログインしていること
+    assert is_logged_in?
   end
 end
