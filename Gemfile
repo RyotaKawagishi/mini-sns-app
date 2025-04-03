@@ -76,5 +76,5 @@ gem "sassc-rails",     "2.1.2"
 gem "bcrypt",          "3.1.18"
 
 group :production do
-  gem "pg", "1.3.5"
+  gem "pg"
 end
