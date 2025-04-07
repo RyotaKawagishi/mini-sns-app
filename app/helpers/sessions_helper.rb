@@ -3,6 +3,9 @@ module SessionsHelper
   # 渡されたユーザーでログインする
   def log_in(user)
     session[:user_id] = user.id
+    # セッションリプレイ攻撃から保護する
+    # 詳しくは https://techracho.bpsinc.jp/hachi8833/2023_06_02/130443 を参照
+    session[:session_token] = user.session_token
   end
 
   # 永続的セッションのためにユーザーをデータベースに記憶し、かつcookiesを作成
@@ -16,7 +19,11 @@ module SessionsHelper
   def current_user
     # 一時セッションが存在
     if (user_id = session[:user_id])
-      @current_user ||= User.find_by(id: user_id)
+      user = User.find_by(id: user_id)
+      # sessionハッシュがユーザーのセッショントークンと等しい場合のみ@current_userを設定
+      if user && session[:session_token] == user.session_token
+        @current_user = user
+      end
     # 存在しない(永続セッションにログイン)
     elsif (user_id = cookies.encrypted[:user_id])
       user =  User.find_by(id: user_id)
@@ -27,13 +34,6 @@ module SessionsHelper
       end
     end
   end
-
-  # # 現在ログイン中のユーザーを返す（いる場合）
-  # def current_user
-  #   if session[:user_id]
-  #     @current_user ||= User.find_by(id: session[:user_id])
-  #   end
-  # end
 
   # ユーザーがログインしていればtrue
   def logged_in?
