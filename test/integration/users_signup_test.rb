@@ -1,40 +1,73 @@
 require "test_helper"
 
-class UsersSignupTest < ActionDispatch::IntegrationTest
+class UsersSignup < ActionDispatch::IntegrationTest
+
+  def setup
+    ActionMailer::Base.deliveries.clear
+  end
+end
+
+class UsersSignupTest < UsersSignup
 
   test "invalid signup information" do
-    # ユーザー情報が無効の場合はユーザー登録ボタンを押してもユーザーが作成されないこと
-    get signup_path
-    assert_no_difference "User.count" do
-      post users_path, params: { user: {name: "",
-                                       email: "user@invalid",
-                                       password: "foo",
-                                       password_confirmation: "bar" } }
-        
+    assert_no_difference 'User.count' do
+      post users_path, params: { user: { name:  "",
+                                         email: "user@invalid",
+                                         password:              "foo",
+                                         password_confirmation: "bar" } }
     end
     assert_response :unprocessable_entity
-    assert_template "users/new"
-
-    # エラーが正しく表示されていること
-    assert_select 'div.alert'
-    assert_select 'div.alert-danger'
+    assert_template 'users/new'
     assert_select 'div#error_explanation'
+    assert_select 'div.field_with_errors'
   end
 
-  # ユーザー登録成功時のテスト
-  test "valid signup information" do
+  test "valid signup information with account activation" do
     assert_difference 'User.count', 1 do
       post users_path, params: { user: { name:  "Example User",
                                          email: "user@example.com",
                                          password:              "password",
                                          password_confirmation: "password" } }
     end
-    # リダイレクト先のshowが正しく表示されること
+    assert_equal 1, ActionMailer::Base.deliveries.size
+  end
+end
+
+class AccountActivationTest < UsersSignup
+
+  def setup
+    super
+    post users_path, params: { user: { name:  "Example User",
+                                       email: "user@example.com",
+                                       password:              "password",
+                                       password_confirmation: "password" } }
+    @user = assigns(:user)
+  end
+
+  test "should not be activated" do
+    assert_not @user.activated?
+  end
+
+  test "should not be able to log in before account activation" do
+    log_in_as(@user)
+    assert_not is_logged_in?
+  end
+
+  test "should not be able to log in with invalid activation token" do
+    get edit_account_activation_path("invalid token", email: @user.email)
+    assert_not is_logged_in?
+  end
+
+  test "should not be able to log in with invalid email" do
+    get edit_account_activation_path(@user.activation_token, email: 'wrong')
+    assert_not is_logged_in?
+  end
+
+  test "should log in successfully with valid activation token and email" do
+    get edit_account_activation_path(@user.activation_token, email: @user.email)
+    assert @user.reload.activated?
     follow_redirect!
     assert_template 'users/show'
-    assert_not flash.blank?
-
-    # 登録後に自動ログインしていること
     assert is_logged_in?
   end
 end
