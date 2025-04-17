@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships
 
+  has_many :replies, class_name: "Micropost", foreign_key: "in_reply_to"
 
   attr_accessor :remember_token, :activation_token, :reset_token
   before_save :downcase_email
@@ -88,7 +89,7 @@ class User < ApplicationRecord
 
   # ユーザーのステータスフィードを返す
   def feed
-    part_of_feed = "relationships.follower_id = :id or microposts.user_id = :id"
+    part_of_feed = "relationships.follower_id = :id or microposts.user_id = :id or microposts.in_reply_to = :id"
     Micropost.left_outer_joins(user: :followers)
              .where(part_of_feed, { id: id }).distinct
              .includes(:user, image_attachment: :blob)
