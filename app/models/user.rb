@@ -109,6 +109,7 @@ class User < ApplicationRecord
   def following?(other_user)
     following.include?(other_user)
   end
+
   private
 
     # メールアドレスをすべて小文字にする
@@ -121,4 +122,6 @@ class User < ApplicationRecord
       self.activation_token  = User.new_token
       self.activation_digest = User.digest(activation_token)
     end
+
+    
 end

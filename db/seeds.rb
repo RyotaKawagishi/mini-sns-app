@@ -37,17 +37,22 @@ User.create!(name:  "ExampleUser3",
 end
 
 # ユーザーの一部を対象にマイクロポストを生成する
-n = 6
-users = User.order(:created_at).take(n)
+users = User.order(:created_at).take(6)
 50.times do
   content = Faker::Lorem.sentence(word_count: 5)
   users.each { |user| user.microposts.create!(content: content) }
 end
 
+# メンション付きのマイクロポストを生成する
+user2 = User.find_by(name: "ExampleUser2")
+user3 = User.find_by(name: "ExampleUser3")
+user2.microposts.create!(content: "Hi, #{user3.name}. How are you?", in_reply_to: user3.id)
+user3.microposts.create!(content: "Hello, #{user2.name}. I'm fine. Thanks!", in_reply_to: user2.id)
+
 # ユーザーフォローのリレーションシップを作成する
 users = User.all
 user  = users.first
-following = users[2..50]
-followers = users[3..40]
+following = users[4..50]
+followers = users[5..40]
 following.each { |followed| user.follow(followed) }
 followers.each { |follower| follower.follow(user) }

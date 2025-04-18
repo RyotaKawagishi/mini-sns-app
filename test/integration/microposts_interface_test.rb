@@ -4,6 +4,7 @@ class MicropostsInterface < ActionDispatch::IntegrationTest
 
   def setup
     @user = users(:michael)
+    @reply_to = users(:archer)
     log_in_as(@user)
   end
 end
@@ -83,5 +84,32 @@ class MicropostsInterfaceTest < MicropostsInterface
       post microposts_path, params: { micropost: { content: cont, image: img } }
       assert assigns(:micropost).image.attached?
     end
+  end
+
+  class MicropostMentionsTest < MicropostsInterface
+    include MicropostsHelper
+
+    test "user can mention another user in micropost" do
+      post microposts_path, params: {
+        micropost: {
+        content:     "Hello!",
+        in_reply_to: @reply_to.id } }
+      follow_redirect!
+      assert_match "Hello!", response.body
+      assert_select 'a.mention-link', text: "@#{@reply_to.name}"    
+    end
+
+
+    test "mentioned user should see the micropost in their feed" do
+      post microposts_path, params: {
+        micropost: {
+        content: "Hello!",
+        in_reply_to: @reply_to.id } }
+      log_in_as(@reply_to)
+      get root_path
+      assert_match "Hello!", response.body
+      assert_select 'a.mention-link', text: "@#{@reply_to.name}"    
+    end
+
   end
 end

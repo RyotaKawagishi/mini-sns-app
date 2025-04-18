@@ -33,3 +33,27 @@ class MicropostTest < ActiveSupport::TestCase
   end
 
 end
+
+class Mention < ActiveSupport::TestCase
+
+  def setup
+    @user = users(:michael)
+    @reply_to = users(:archer)
+  end
+
+end
+
+class MentionTest < Mention
+  
+  test "should keep content unchanged if not replying" do
+    micropost = Micropost.new(content: "Just a post", user: @user)
+    assert micropost.valid?
+  end
+  
+  test "should not allow replying to self" do
+    micropost = Micropost.new(content: "Hello", in_reply_to: @user.id, user: @user)
+    assert_not micropost.valid?
+    assert_includes micropost.errors.full_messages, "You can't reply to yourself."
+  end
+  
+end
