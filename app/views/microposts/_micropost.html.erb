@@ -2,7 +2,7 @@
   <%= link_to gravatar_for(micropost.user, size: 50), micropost.user %>
   <span class="user"><%= link_to micropost.user.name, micropost.user %></span>
 
-  <% if micropost.reply_to_user %>
+  <% if micropost.in_reply_to %>
     <div class="mention-container">
       mention: <%= mention_link(micropost.in_reply_to) %>
     </div>

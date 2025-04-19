@@ -1,6 +1,6 @@
 class Micropost < ApplicationRecord
   belongs_to :user
-  belongs_to :reply_to_user, class_name: "User", foreign_key: "in_reply_to", optional: true
+  # belongs_to :reply_to_user, class_name: "User", foreign_key: "in_reply_to", optional: true
 
   has_one_attached :image do |attachable|
     attachable.variant :display, resize_to_limit: [250, 250]
