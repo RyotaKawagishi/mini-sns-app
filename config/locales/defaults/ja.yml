@@ -1,0 +1,6 @@
+ja:
+  errors:
+    messages:
+      user_not_found: "指定されたユーザーIDは存在しません。"
+      cannot_reply_to_self: "自分自身にリプライすることはできません。"
+

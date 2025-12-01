@@ -77,15 +77,24 @@
 ### フェーズ3: カスタムバリデーションの分離
 
 #### 3.1 Validatorの作成
-- [ ] `app/validators/` ディレクトリの作成
-- [ ] `ReplyToUserValidator` の作成
-- [ ] `CannotReplyToSelfValidator` の作成
+- [x] `app/validators/` ディレクトリの作成
+- [x] `ReplyToUserValidator` の作成
+- [x] `CannotReplyToSelfValidator` の作成
 
 #### 3.2 モデルの更新
-- [ ] `Micropost` モデルのバリデーションを更新
-- [ ] テストの更新と動作確認
+- [x] `Micropost` モデルのバリデーションを更新
+  - `validate :validate_reply_to_user` と `validate :cannot_reply_to_self` を削除
+  - `validates :in_reply_to, reply_to_user: true, cannot_reply_to_self: true, allow_nil: true` に置き換え
+- [x] テストの更新と動作確認
+  - エラーメッセージの形式に合わせてテストを修正
+  - 112 tests, 544 assertions, 0 failures
+
+#### 3.3 エラーメッセージの多言語化
+- [x] `config/locales/defaults/ja.yml` の作成
+- [x] `config/locales/en.yml` にエラーメッセージを追加
 
 **期間見積もり**: 1週間
+**進捗**: 完了
 
 ---
 

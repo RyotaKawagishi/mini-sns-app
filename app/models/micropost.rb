@@ -17,8 +17,7 @@ class Micropost < ApplicationRecord
                                       message: "must be a valid image format" },
                       size:         { less_than: 5.megabytes,
                                       message:   "should be less than 5MB" }
-  validate :validate_reply_to_user
-  validate :cannot_reply_to_self
+  validates :in_reply_to, reply_to_user: true, cannot_reply_to_self: true, allow_nil: true
 
 
   # コンテンツ中にメンションがあれば、in_reply_toをセットする（フォームにしたので現在不要）
@@ -34,21 +33,6 @@ class Micropost < ApplicationRecord
     end
   end
 
-  # ユーザーがメンションを正しく指定しているか確認する
-  # @raise [ActiveRecord::RecordInvalid] リプライ先のユーザーが存在しない場合、または自分自身にリプライしようとした場合
-  # @return [void]
-  def validate_reply_to_user
-    return if self.in_reply_to.nil?
-    unless user = User.find_by(id: self.in_reply_to)
-            errors.add(:base, "User ID you specified doesn't exist.")
-    else
-        if user_id == self.in_reply_to
-            errors.add(:base, "You can't reply to yourself.")
-        end
-    end
-  end
-
-
   private
 
     # メンションをコンテンツの一行目に追加する（現在不要）
@@ -59,14 +43,6 @@ class Micropost < ApplicationRecord
       return unless user_to_mention
       mention = "@#{user_to_mention.id}-#{user_to_mention.name.gsub(" ", "-")}"
       self.content = "#{mention} #{content}" #unless content.include?(mention)
-    end
-
-    # ユーザーが自分自身にメンションできないようにする
-    # @raise [ActiveRecord::RecordInvalid] 自分自身にリプライしようとした場合
-    # @return [void]
-    def cannot_reply_to_self
-      return unless user && in_reply_to == user.id
-      errors.add(:in_reply_to, "You can't reply to yourself.")
     end
 
 end

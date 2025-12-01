@@ -6,7 +6,7 @@
 
 - [ ] フェーズ1: 準備と基盤整備
 - [ ] フェーズ2: ドキュメンテーションと軽微な修正
-- [ ] フェーズ3: カスタムバリデーションの分離
+- [x] フェーズ3: カスタムバリデーションの分離
 - [ ] フェーズ4: 認可ロジックの分離
 - [ ] フェーズ5: ルーティングの見直し（オプション）
 - [ ] フェーズ6: テストフレームワークの移行（オプション）
@@ -96,16 +96,18 @@
 ## フェーズ3: カスタムバリデーションの分離
 
 ### Validatorの作成
-- [ ] `app/validators/` ディレクトリの作成
-- [ ] `ReplyToUserValidator` の作成
-- [ ] `CannotReplyToSelfValidator` の作成
-- [ ] エラーメッセージの多言語化対応
+- [x] `app/validators/` ディレクトリの作成
+- [x] `ReplyToUserValidator` の作成
+- [x] `CannotReplyToSelfValidator` の作成
+- [x] エラーメッセージの多言語化対応
+  - `config/locales/defaults/ja.yml` の作成
+  - `config/locales/en.yml` にエラーメッセージを追加
 
 ### モデルの更新
-- [ ] `Micropost` モデルのバリデーションを更新
-- [ ] 既存のバリデーションメソッドの削除
-- [ ] テストの更新
-- [ ] 動作確認
+- [x] `Micropost` モデルのバリデーションを更新
+- [x] 既存のバリデーションメソッドの削除（`validate_reply_to_user`, `cannot_reply_to_self`を削除）
+- [x] テストの更新（エラーメッセージの形式に合わせて修正）
+- [x] 動作確認（112 tests, 544 assertions, 0 failures）
 
 **完了日**: _______________
 
