@@ -53,7 +53,7 @@ class MentionTest < Mention
   test "should not allow replying to self" do
     micropost = Micropost.new(content: "Hello", in_reply_to: @user.id, user: @user)
     assert_not micropost.valid?
-    assert_includes micropost.errors.full_messages, "You can't reply to yourself."
+    assert_includes micropost.errors.full_messages, "In reply to You can't reply to yourself."
   end
   
 end

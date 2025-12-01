@@ -29,3 +29,7 @@
 
 en:
   hello: "Hello world"
+  errors:
+    messages:
+      user_not_found: "User ID you specified doesn't exist."
+      cannot_reply_to_self: "You can't reply to yourself."
