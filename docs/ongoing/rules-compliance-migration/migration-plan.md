@@ -98,6 +98,26 @@
 
 ---
 
+### フェーズ3.5: 開発環境でのメール送信設定
+
+#### 3.5.1 letter_openerの導入
+- [x] `letter_opener` gemの追加（Gemfile）
+- [x] `bundle install` の実行
+- [x] `development.rb` にletter_openerの設定を追加
+  - `config.action_mailer.delivery_method = :letter_opener`
+  - `config.action_mailer.perform_deliveries = true`
+
+#### 3.5.2 動作確認
+- [ ] アカウント有効化メールの送信確認
+  - ユーザー登録時にメールがブラウザで開くことを確認
+
+**期間見積もり**: 1日
+**進捗**: 設定完了。動作確認待ち。
+
+**目的**: Mailgunなどの有料サービスを使わずに、開発環境でメール送信を確認できるようにする。
+
+---
+
 ### フェーズ4: 認可ロジックの分離
 
 #### 4.1 Punditの導入
@@ -173,6 +193,8 @@
 フェーズ2 (ドキュメンテーション)
   ↓
 フェーズ3 (バリデーション)
+  ↓
+フェーズ3.5 (開発環境メール設定)
   ↓
 フェーズ4 (認可)
   ↓
