@@ -2,29 +2,32 @@ class UsersController < ApplicationController
 
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
                                         :following, :followers]
-  before_action :correct_user,   only: [:edit, :update]
-  before_action :admin_user,     only: :destroy
 
   # @return [void]
   def index
-    @users = User.where(activated: true).paginate(page: params[:page])
+    @users = policy_scope(User).paginate(page: params[:page])
+    authorize @users
   end
   
+  # @param id [Integer] ユーザーID
   # @return [void]
   def show
     @user = User.find(params[:id])
-    redirect_to root_url and return unless @user.activated?
+    authorize @user
     @microposts = @user.microposts.paginate(page: params[:page])
   end
 
   # @return [void]
   def new
     @user = User.new
+    authorize @user
   end
 
+  # @param user_params [Hash] ユーザーパラメータ
   # @return [void]
   def create
     @user = User.new(user_params)
+    authorize @user
     # 保存に成功すればデータベースに保存し、showへ
     if @user.save
       @user.send_activation_email
@@ -35,14 +38,19 @@ class UsersController < ApplicationController
     end
   end
 
+  # @param id [Integer] ユーザーID
   # @return [void]
   def edit
     @user = User.find(params[:id])
+    authorize @user
   end
   
+  # @param id [Integer] ユーザーID
+  # @param user_params [Hash] ユーザーパラメータ
   # @return [void]
   def update
     @user = User.find(params[:id])
+    authorize @user
     if @user.update(user_params)
       flash[:success] = "Profile updated"
       redirect_to @user
@@ -51,50 +59,41 @@ class UsersController < ApplicationController
     end
   end
 
-
+  # @param id [Integer] ユーザーID
   # @return [void]
   def destroy
-    User.find(params[:id]).destroy
+    @user = User.find(params[:id])
+    authorize @user
+    @user.destroy
     flash[:success] = "User deleted"
     redirect_to users_url, status: :see_other
   end
 
+  # @param id [Integer] ユーザーID
   # @return [void]
   def following
     @title = "Following"
     @user = User.find(params[:id])
+    authorize @user, :following?
     @users = @user.following.paginate(page: params[:page])
     render "show_follow"
   end
 
+  # @param id [Integer] ユーザーID
   # @return [void]
   def followers
     @title = "Followers"
     @user = User.find(params[:id])
+    authorize @user, :followers?
     @users = @user.followers.paginate(page: params[:page])
     render "show_follow"
   end
 
   private
 
+    # @return [Hash] 許可されたユーザーパラメータ
     def user_params
       params.require(:user).permit(:name, :email, :password,
                                    :password_confirmation,)
     end
-
-    # beforeフィルタ
-
-    # 正しいユーザーかどうか確認
-    # @return [void]
-    def correct_user
-      @user = User.find(params[:id])
-      redirect_to(root_url, status: :see_other) unless current_user?(@user)
-    end
-
-    # 管理者かどうか確認
-    # @return [void]
-    def admin_user
-      redirect_to(root_url, status: :see_other) unless current_user.admin?
-    end
-
 end
