@@ -1,10 +1,11 @@
 class MicropostsController < ApplicationController
   before_action :logged_in_user, only: [:create, :destroy]
-  before_action :correct_user,   only: :destroy
 
+  # @param micropost_params [Hash] マイクロポストパラメータ
   # @return [void]
   def create
     @micropost = current_user.microposts.build(micropost_params)
+    authorize @micropost
     @micropost.image.attach(params[:micropost][:image])
     if @micropost.save
       flash[:success] = "Micropost created!"
@@ -15,8 +16,11 @@ class MicropostsController < ApplicationController
     end
   end
 
+  # @param id [Integer] マイクロポストID
   # @return [void]
   def destroy
+    @micropost = Micropost.find(params[:id])
+    authorize @micropost
     @micropost.destroy
     flash[:success] = "Micropost deleted"
     if request.referrer.nil?
@@ -28,13 +32,8 @@ class MicropostsController < ApplicationController
   
   private
 
+    # @return [Hash] 許可されたマイクロポストパラメータ
     def micropost_params
         params.require(:micropost).permit(:content, :image, :in_reply_to)
-    end
-
-    # @return [void]
-    def correct_user
-      @micropost = current_user.microposts.find_by(id: params[:id])
-      redirect_to root_url, status: :see_other if @micropost.nil?
     end
 end
