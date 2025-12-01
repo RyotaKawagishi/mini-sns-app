@@ -1,0 +1,64 @@
+## 概要
+
+フェーズ6として、テストフレームワークをMinitestからRSpecに移行し、FactoryBotを導入しました。
+
+## 関連Issue
+
+Issueなし
+
+## 変更内容
+
+- RSpecとFactoryBotの導入
+- モデルテストのRSpecへの変換（User, Micropost, Relationship）
+- Policyテストの作成（UserPolicy, MicropostPolicy）
+- Validatorテストの作成（ReplyToUserValidator, CannotReplyToSelfValidator）
+- コントローラーテストのRSpecへの変換（Users, Microposts, Sessions）
+- FactoryBotのFactory作成（users, microposts, relationships）
+- 認証ヘルパーの追加（AuthenticationHelper）
+
+## 実装詳細
+
+### RSpecの導入
+- `rspec-rails` gemを追加
+- `rails generate rspec:install`でRSpecの初期設定を実行
+- `spec/spec_helper.rb`と`spec/rails_helper.rb`を作成
+
+### FactoryBotの導入
+- `factory_bot_rails` gemを追加
+- `spec/factories/`ディレクトリにFactoryを作成
+- `rails_helper.rb`にFactoryBotの設定を追加
+
+### テストの移行
+- 既存のMinitestテストをRSpecに変換
+- モデルテスト: `spec/models/`に配置
+- Policyテスト: `spec/policies/`に配置
+- Validatorテスト: `spec/validators/`に配置
+- コントローラーテスト: `spec/requests/`に配置（RSpecではrequest specとして実装）
+
+### FactoryBotのFactory
+- `spec/factories/users.rb`: UserモデルのFactory（admin, inactiveトレイトを含む）
+- `spec/factories/microposts.rb`: MicropostモデルのFactory
+- `spec/factories/relationships.rb`: RelationshipモデルのFactory
+
+### 認証ヘルパー
+- `spec/support/authentication_helper.rb`: テスト用のログインヘルパーを追加
+- `log_in_as`メソッドを提供し、request specで使用可能に
+
+## テスト
+
+- [x] 既存のテストがすべて通過することを確認（71 examples, 0 failures）
+- [x] 新規テストを追加（Policyテスト、Validatorテスト）
+- [x] 手動テストを実施（RSpecの実行結果を確認）
+
+## チェックリスト
+
+- [x] コードレビューを依頼する準備ができている
+- [x] 関連するドキュメントを更新した（migration-plan.md）
+- [x] 既存のテストがすべて通過する
+- [x] 新しい警告やエラーがない
+
+## その他
+
+- Minitestのテストファイル（`test/`ディレクトリ）は残してありますが、今後はRSpecを使用します
+- フェーズ8（CI/CD）でRSpecの自動実行を設定する予定です
+
