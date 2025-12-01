@@ -1,8 +1,8 @@
 class CreateRelationships < ActiveRecord::Migration[7.1]
   def change
     create_table :relationships do |t|
-      t.integer :follower_id
-      t.integer :followed_id
+      t.integer :follower_id, comment: "フォロワーID"
+      t.integer :followed_id, comment: "フォロー中ID"
 
       t.timestamps
     end

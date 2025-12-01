@@ -22,6 +22,7 @@ class Micropost < ApplicationRecord
 
 
   # コンテンツ中にメンションがあれば、in_reply_toをセットする（フォームにしたので現在不要）
+  # @return [Integer, nil] リプライ先のユーザーID、またはnil
   def set_in_reply_to
     return self.in_reply_to = nil unless content
     # @数字-ユーザー名 の形式だけに反応するように修正
@@ -34,6 +35,8 @@ class Micropost < ApplicationRecord
   end
 
   # ユーザーがメンションを正しく指定しているか確認する
+  # @raise [ActiveRecord::RecordInvalid] リプライ先のユーザーが存在しない場合、または自分自身にリプライしようとした場合
+  # @return [void]
   def validate_reply_to_user
     return if self.in_reply_to.nil?
     unless user = User.find_by(id: self.in_reply_to)
@@ -49,6 +52,7 @@ class Micropost < ApplicationRecord
   private
 
     # メンションをコンテンツの一行目に追加する（現在不要）
+    # @return [String, nil] メンションが追加されたコンテンツ、またはnil
     def prepend_mention_to_content
       return unless in_reply_to.present?
       user_to_mention = User.find_by(id: in_reply_to)
@@ -58,6 +62,8 @@ class Micropost < ApplicationRecord
     end
 
     # ユーザーが自分自身にメンションできないようにする
+    # @raise [ActiveRecord::RecordInvalid] 自分自身にリプライしようとした場合
+    # @return [void]
     def cannot_reply_to_self
       return unless user && in_reply_to == user.id
       errors.add(:in_reply_to, "You can't reply to yourself.")
