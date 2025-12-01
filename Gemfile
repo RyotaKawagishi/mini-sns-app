@@ -72,6 +72,8 @@ group :test do
   gem "minitest-reporters",       "1.6.0"
   gem "guard",                    "2.18.0"
   gem "guard-minitest",           "2.4.6"
+  gem "rspec-rails",              "~> 6.1"
+  gem "factory_bot_rails",        "~> 6.4"
 end
 
 gem "bootstrap-sass",  "3.4.1"
