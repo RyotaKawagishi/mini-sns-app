@@ -43,46 +43,51 @@
 ### Yard記法の追加
 
 #### Userモデル
-- [ ] `digest` メソッド
-- [ ] `new_token` メソッド
-- [ ] `remember` メソッド
-- [ ] `session_token` メソッド
-- [ ] `authenticated?` メソッド
-- [ ] `forget` メソッド
-- [ ] `activate` メソッド
-- [ ] `send_activation_email` メソッド
-- [ ] `create_reset_digest` メソッド
-- [ ] `send_password_reset_email` メソッド
-- [ ] `password_reset_expired?` メソッド
-- [ ] `feed` メソッド
-- [ ] `follow` メソッド
-- [ ] `unfollow` メソッド
-- [ ] `following?` メソッド
+- [x] `digest` メソッド
+- [x] `new_token` メソッド
+- [x] `remember` メソッド
+- [x] `session_token` メソッド
+- [x] `authenticated?` メソッド
+- [x] `forget` メソッド
+- [x] `activate` メソッド
+- [x] `send_activation_email` メソッド
+- [x] `create_reset_digest` メソッド
+- [x] `send_password_reset_email` メソッド
+- [x] `password_reset_expired?` メソッド
+- [x] `feed` メソッド
+- [x] `follow` メソッド
+- [x] `unfollow` メソッド
+- [x] `following?` メソッド
+- [x] `downcase_email` メソッド（private）
+- [x] `create_activation_digest` メソッド（private）
 
 #### Micropostモデル
-- [ ] `set_in_reply_to` メソッド
-- [ ] `validate_reply_to_user` メソッド
-- [ ] `prepend_mention_to_content` メソッド
-- [ ] `cannot_reply_to_self` メソッド
+- [x] `set_in_reply_to` メソッド
+- [x] `validate_reply_to_user` メソッド
+- [x] `prepend_mention_to_content` メソッド（private）
+- [x] `cannot_reply_to_self` メソッド（private）
 
 #### その他のモデル
-- [ ] Relationshipモデルのメソッド
+- [x] Relationshipモデル（メソッドなしのため完了）
 
 #### コントローラー
-- [ ] 主要なコントローラーメソッド
+- [x] UsersControllerの主要メソッド（index, show, new, create, edit, update, destroy, following, followers）
+- [x] MicropostsControllerの主要メソッド（create, destroy）
+- [x] SessionsControllerの主要メソッド（new, create, destroy）
+- [x] ApplicationControllerのlogged_in_userメソッド
 
 ### マイグレーションコメントの追加
-- [ ] `20250401183153_create_users.rb`
-- [ ] `20250402064254_add_index_to_users_email.rb`
-- [ ] `20250402074002_add_password_digest_to_users.rb`
-- [ ] `20250403182422_add_remember_digest_to_users.rb`
-- [ ] `20250407135819_add_admin_to_users.rb`
-- [ ] `20250408075815_add_activation_to_users.rb`
-- [ ] `20250409062419_add_reset_to_users.rb`
-- [ ] `20250409092705_create_microposts.rb`
-- [ ] `20250410082210_create_active_storage_tables.active_storage.rb`
-- [ ] `20250414114028_create_relationships.rb`
-- [ ] `20250417061830_add_in_reply_to_column_to_microposts.rb`
+- [x] `20250401183153_create_users.rb`
+- [x] `20250402064254_add_index_to_users_email.rb`（インデックス追加のみのためコメント不要）
+- [x] `20250402074002_add_password_digest_to_users.rb`
+- [x] `20250403182422_add_remember_digest_to_users.rb`
+- [x] `20250407135819_add_admin_to_users.rb`
+- [x] `20250408075815_add_activation_to_users.rb`
+- [x] `20250409062419_add_reset_to_users.rb`
+- [x] `20250409092705_create_microposts.rb`
+- [x] `20250410082210_create_active_storage_tables.active_storage.rb`（Active Storageのマイグレーションのためコメント不要）
+- [x] `20250414114028_create_relationships.rb`
+- [x] `20250417061830_add_in_reply_to_column_to_microposts.rb`
 
 **完了日**: _______________
 
