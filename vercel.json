@@ -1,0 +1,30 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "bundle install && npm ci && bin/rails assets:precompile",
+  "devCommand": "bin/rails server",
+  "installCommand": "bundle install && npm ci",
+  "framework": null,
+  "outputDirectory": "public",
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.rb"
+    }
+  ],
+  "functions": {
+    "api/index.rb": {
+      "runtime": "ruby3.2",
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "RAILS_ENV": "production",
+    "RAILS_LOG_TO_STDOUT": "true"
+  }
+}
