@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+# frozen_string_literal: true
+#
+# pre-push hook: push前に変更されたファイルに関連するRSpecテストのみを実行し、
+# テストが失敗した場合はpushを阻止する
+#
+# セットアップ: bin/setup-git-hooks を実行するか、このファイルを .git/hooks/pre-push にコピーしてください
+
+set -e
+
+# リポジトリのルートディレクトリに移動
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+# 色付き出力
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+info() {
+  echo -e "${GREEN}[pre-push]${NC} $1"
+}
+
+warn() {
+  echo -e "${YELLOW}[pre-push]${NC} $1"
+}
+
+error() {
+  echo -e "${RED}[pre-push]${NC} $1"
+}
+
+# 変更されたファイルから関連するspecファイルを特定する
+# 引数: 変更されたファイルのパス（改行区切り）
+# 出力: 実行するspecファイルのパス（重複なし、改行区切り）
+get_related_specs() {
+  local changed_files="$1"
+  local spec_files=""
+  local run_all_specs=false
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+
+    case "$file" in
+      # specファイル自体の変更
+      spec/*_spec.rb)
+        spec_files="${spec_files}${file}"$'\n'
+        ;;
+      # モデル: app/models/user.rb -> spec/models/user_spec.rb
+      app/models/*.rb)
+        local model_name
+        model_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/models/${model_name}_spec.rb"$'\n'
+        ;;
+      # コントローラー: app/controllers/users_controller.rb -> spec/requests/users_spec.rb
+      app/controllers/*_controller.rb)
+        local controller_name
+        controller_name=$(basename "$file" _controller.rb)
+        spec_files="${spec_files}spec/requests/${controller_name}_spec.rb"$'\n'
+        ;;
+      # ポリシー: app/policies/user_policy.rb -> spec/policies/user_policy_spec.rb
+      app/policies/*_policy.rb)
+        local policy_name
+        policy_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/policies/${policy_name}_spec.rb"$'\n'
+        ;;
+      # バリデータ: app/validators/X_validator.rb -> spec/validators/X_validator_spec.rb
+      app/validators/*.rb)
+        local validator_name
+        validator_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/validators/${validator_name}_spec.rb"$'\n'
+        ;;
+      # デコレーター: app/decorators/X.rb -> spec/decorators/X_spec.rb
+      app/decorators/*.rb)
+        local decorator_name
+        decorator_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/decorators/${decorator_name}_spec.rb"$'\n'
+        ;;
+      # ジョブ: app/jobs/X_job.rb -> spec/jobs/X_job_spec.rb
+      app/jobs/*.rb)
+        local job_name
+        job_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/jobs/${job_name}_spec.rb"$'\n'
+        ;;
+      # メーラー: app/mailers/X_mailer.rb -> spec/mailers/X_mailer_spec.rb
+      app/mailers/*.rb)
+        local mailer_name
+        mailer_name=$(basename "$file" .rb)
+        spec_files="${spec_files}spec/mailers/${mailer_name}_spec.rb"$'\n'
+        ;;
+      # 設定・DB・サポート・ファクトリの変更は全specを実行
+      config/*|db/*|spec/support/*|spec/factories/*|Gemfile|Gemfile.lock)
+        run_all_specs=true
+        ;;
+      # その他のapp配下（helpers, serializers等）は全specを実行（直接のspecがないため）
+      app/*)
+        run_all_specs=true
+        ;;
+      # その他（lib等）
+      *)
+        run_all_specs=true
+        ;;
+    esac
+  done <<< "$changed_files"
+
+  if [[ "$run_all_specs" == true ]]; then
+    echo "spec"
+    return
+  fi
+
+  # 重複を除去し、存在するspecファイルのみを出力
+  echo "$spec_files" | sort -u | while IFS= read -r spec; do
+    [[ -z "$spec" ]] && continue
+    if [[ -f "$spec" ]]; then
+      echo "$spec"
+    fi
+  done
+}
+
+# 変更ファイルを取得
+# stdin形式: local_ref local_sha remote_ref remote_sha
+# remote_sha..local_sha の差分がpush対象
+get_changed_files() {
+  local remote_sha="$1"
+  local local_sha="$2"
+
+  # 新規ブランチのpush（remote_shaが40個の0）の場合は全変更ファイルを対象
+  if [[ "$remote_sha" == 0000000000000000000000000000000000000000 ]]; then
+    git diff --name-only --diff-filter=ACMR 0000000000000000000000000000000000000000.."$local_sha"
+  else
+    git diff --name-only --diff-filter=ACMR "$remote_sha".."$local_sha"
+  fi
+}
+
+# メイン処理
+main() {
+  # 標準入力からref情報を読み取る（pre-push hookはstdinから受け取る）
+  local run_tests=false
+  local all_changed_files=""
+
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    [[ -z "$local_sha" || "$local_sha" == "0"* ]] && continue
+
+    local changed_files
+    changed_files=$(get_changed_files "$remote_sha" "$local_sha")
+    [[ -n "$changed_files" ]] && run_tests=true
+    all_changed_files="${all_changed_files}${changed_files}"$'\n'
+  done
+
+  if [[ "$run_tests" != true ]]; then
+    info "変更されたファイルがありません。pushを続行します。"
+    exit 0
+  fi
+
+  # Ruby/RSpecの変更を検出（.rbファイルまたはspec関連）
+  local ruby_changes
+  ruby_changes=$(echo "$all_changed_files" | grep -E '\.(rb)$|^spec/|^app/|^config/|^db/|Gemfile' || true)
+  if [[ -z "$ruby_changes" ]]; then
+    info "RSpecに関連する変更がありません。pushを続行します。"
+    exit 0
+  fi
+
+  local specs_to_run
+  specs_to_run=$(get_related_specs "$ruby_changes")
+
+  if [[ -z "$specs_to_run" ]]; then
+    info "実行するspecがありません。pushを続行します。"
+    exit 0
+  fi
+
+  info "関連するRSpecテストを実行しています..."
+  if [[ "$specs_to_run" == "spec" ]]; then
+    info "全specを実行します（設定・DB・サポート等の変更を検出）"
+    if bundle exec rspec spec; then
+      info "すべてのテストが成功しました。pushを続行します。"
+      exit 0
+    else
+      error "テストが失敗しました。pushを中止します。"
+      error "修正後、再度pushしてください。"
+      exit 1
+    fi
+  fi
+
+  local spec_files
+  spec_files=$(echo "$specs_to_run" | tr '\n' ' ')
+  info "実行対象: $spec_files"
+  if bundle exec rspec $spec_files; then
+    info "すべてのテストが成功しました。pushを続行します。"
+    exit 0
+  else
+    error "テストが失敗しました。pushを中止します。"
+    error "修正後、再度pushしてください。"
+    exit 1
+  fi
+}
+
+main

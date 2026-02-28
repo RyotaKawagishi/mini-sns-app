@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# frozen_string_literal: true
+#
+# Git Hooksのセットアップスクリプト
+# pre-push hookを .git/hooks/pre-push にインストールします
+#
+# 使い方: bin/setup-git-hooks
+
+set -e
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HOOK_SOURCE="${REPO_ROOT}/bin/pre-push"
+HOOK_DEST="${REPO_ROOT}/.git/hooks/pre-push"
+
+if [[ ! -d "${REPO_ROOT}/.git" ]]; then
+  echo "Error: .git ディレクトリが見つかりません。リポジトリのルートで実行してください。" >&2
+  exit 1
+fi
+
+if [[ ! -f "$HOOK_SOURCE" ]]; then
+  echo "Error: bin/pre-push が見つかりません。" >&2
+  exit 1
+fi
+
+cp "$HOOK_SOURCE" "$HOOK_DEST"
+chmod +x "$HOOK_DEST"
+echo "pre-push hook をインストールしました: .git/hooks/pre-push"
+echo ""
+echo "push前に変更されたファイルに関連するRSpecテストが自動実行されます。"
+echo "テストが失敗した場合、pushは阻止されます。"
