@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 変更ファイル検出のため、全履歴を取得
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.event.after }}"
+          fi
+          
+          echo "ruby_files=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(rb)$|^spec/|^app/|^config/|^db/|Gemfile|\.rubocop\.yml' | tr '\n' ' ' || echo '')" >> $GITHUB_OUTPUT
+          echo "js_files=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(js)$|^app/javascript/|package\.json|\.eslintrc' | grep -v -E '\.eslintrc\.js|\.stylelintrc\.js' | tr '\n' ' ' || echo '')" >> $GITHUB_OUTPUT
+          echo "scss_files=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(scss|css)$|^app/assets/stylesheets/|\.stylelintrc' | tr '\n' ' ' || echo '')" >> $GITHUB_OUTPUT
+          echo "slim_files=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.slim$|^app/views/' | tr '\n' ' ' || echo '')" >> $GITHUB_OUTPUT
+          echo "has_ruby_changes=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(rb)$|^spec/|^app/|^config/|^db/|Gemfile|\.rubocop\.yml' > /dev/null && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "has_js_changes=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(js)$|^app/javascript/|package\.json|\.eslintrc' > /dev/null && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "has_scss_changes=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.(scss|css)$|^app/assets/stylesheets/|\.stylelintrc' > /dev/null && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "has_slim_changes=$(git diff --name-only --diff-filter=ACMR ${BASE_SHA}..${HEAD_SHA} | grep -E '\.slim$|^app/views/' > /dev/null && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+      - name: Run Brakeman (Security Scan)
+        if: steps.changes.outputs.has_ruby_changes == 'true'
+        continue-on-error: true
+        run: bundle exec brakeman --no-pager --quiet --no-exit-on-warn || true
+
+      - name: Run RuboCop
+        if: steps.changes.outputs.has_ruby_changes == 'true' && steps.changes.outputs.ruby_files != ''
+        continue-on-error: true
+        run: |
+          rb_files="${{ steps.changes.outputs.ruby_files }}"
+          if [ -n "$rb_files" ]; then
+            bundle exec rubocop $rb_files || true
+          fi
+
+      - name: Run Slim-Lint
+        if: steps.changes.outputs.has_slim_changes == 'true' && steps.changes.outputs.slim_files != ''
+        continue-on-error: true
+        run: |
+          slim_files="${{ steps.changes.outputs.slim_files }}"
+          if [ -n "$slim_files" ]; then
+            bundle exec slim-lint $slim_files || true
+          fi
+
+      - name: Run ESLint
+        if: steps.changes.outputs.has_js_changes == 'true' && steps.changes.outputs.js_files != ''
+        continue-on-error: true
+        run: |
+          js_files="${{ steps.changes.outputs.js_files }}"
+          if [ -n "$js_files" ]; then
+            npm run lint -- $js_files || true
+          fi
+
+      - name: Run Stylelint
+        if: steps.changes.outputs.has_scss_changes == 'true' && steps.changes.outputs.scss_files != ''
+        continue-on-error: true
+        run: |
+          scss_files="${{ steps.changes.outputs.scss_files }}"
+          if [ -n "$scss_files" ]; then
+            npm run lint:css -- $scss_files || true
+          fi
+
+      - name: Setup database
+        if: steps.changes.outputs.has_ruby_changes == 'true'
+        env:
+          RAILS_ENV: test
+        run: bin/rails db:setup
+
+      - name: Run RSpec
+        if: steps.changes.outputs.has_ruby_changes == 'true'
+        env:
+          RAILS_ENV: test
+        run: bundle exec rspec
