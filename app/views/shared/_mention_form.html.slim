@@ -1,0 +1,21 @@
+div
+  .form-floating.mb-3
+    input#reply_user_search.form-control placeholder="In reply to..." list="user_list"/
+  datalist#user_list
+    - User.all.each do |user|
+      option data-id=user.id value=user.name
+  = hidden_field_tag "micropost[in_reply_to]", "", id: "micropost_in_reply_to"
+javascript:
+  document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("reply_user_search");
+    const hidden = document.getElementById("micropost_in_reply_to");
+    const options = document.querySelectorAll("#user_list option");
+
+    if (input && hidden) {
+      input.addEventListener("input", () => {
+        const val = input.value;
+        const match = [...options].find(opt => opt.value === val);
+        hidden.value = match ? match.dataset.id : "";
+      });
+    }
+  });

@@ -438,6 +438,7 @@ DEPENDENCIES
   rubocop-rspec (~> 2.26)
   sassc-rails (= 2.1.2)
   selenium-webdriver (= 4.8.3)
+  slim
   slim_lint (~> 0.24)
   sprockets-rails
   sqlite3 (= 1.6.1)

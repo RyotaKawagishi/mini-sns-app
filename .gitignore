@@ -34,6 +34,5 @@
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 
-# Ignore node_modules and npm lock files
+# Ignore node_modules
 /node_modules/
-/package-lock.json
