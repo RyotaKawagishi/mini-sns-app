@@ -228,14 +228,20 @@ main() {
     if [[ -n "$rb_files" ]]; then
       info "RuboCopを実行しています..."
       # exit code: 0=成功, 1=コードエラー, 2=設定エラー
-      # サブシェルで実行してカレントディレクトリを確実に変更し、exit codeを正しく取得
+      # サブシェルで実行してカレントディレクトリを確実に変更
       local rubocop_output
       local rubocop_exit_code
-      rubocop_output=$(
+      # 一時ファイルを使ってexit codeを取得
+      local temp_file
+      temp_file=$(mktemp)
+      (
         cd "$REPO_ROOT" || exit 1
-        bundle exec rubocop $rb_files 2>&1
+        bundle exec rubocop $rb_files > "$temp_file" 2>&1
+        echo $? > "${temp_file}.exit"
       )
-      rubocop_exit_code=$?
+      rubocop_exit_code=$(cat "${temp_file}.exit" 2>/dev/null || echo "1")
+      rubocop_output=$(cat "$temp_file" 2>/dev/null || echo "")
+      rm -f "$temp_file" "${temp_file}.exit" 2>/dev/null || true
       if [[ $rubocop_exit_code -eq 0 ]]; then
         info "RuboCopチェックが成功しました。"
       elif [[ $rubocop_exit_code -eq 2 ]]; then
