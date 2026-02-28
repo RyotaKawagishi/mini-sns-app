@@ -125,10 +125,13 @@ get_changed_files() {
   local remote_sha="$1"
   local local_sha="$2"
 
-  # 新規ブランチのpush（remote_shaが40個の0）の場合は全変更ファイルを対象
-  if [[ "$remote_sha" == 0000000000000000000000000000000000000000 ]]; then
-    # 新規ブランチの場合、ベースコミットからの全変更（新規追加含む）を取得
-    git diff --name-only --diff-filter=ACMR 0000000000000000000000000000000000000000.."$local_sha"
+  # 新規ブランチのpush（remote_shaが40個の0または空）の場合は全変更ファイルを対象
+  if [[ -z "$remote_sha" || "$remote_sha" == 0000000000000000000000000000000000000000 ]]; then
+    # 新規ブランチの場合、そのコミットに含まれる全ファイル（新規追加含む）を取得
+    # git diff-treeを使うことで、新規ブランチでも正しく動作する
+    git diff-tree --no-commit-id --name-only --diff-filter=ACMR -r "$local_sha" 2>/dev/null || \
+    git show --name-only --pretty=format: --diff-filter=ACMR "$local_sha" 2>/dev/null || \
+    echo ""
   else
     # 既存ブランチの場合、リモートとの差分（新規追加含む）を取得
     git diff --name-only --diff-filter=ACMR "$remote_sha".."$local_sha"
@@ -196,7 +199,8 @@ main() {
   if [[ "$has_ruby_changes" == true ]]; then
     info "Brakemanを実行しています（セキュリティスキャン）..."
     # --no-exit-on-warn: 警告があってもexit code 0を返す（エラーのみで停止）
-    if bundle exec brakeman --no-pager --quiet --no-exit-on-warn; then
+    # カレントディレクトリを明示的に指定（.gitディレクトリから実行される場合があるため）
+    if (cd "$REPO_ROOT" && bundle exec brakeman --no-pager --quiet --no-exit-on-warn); then
       info "Brakemanチェックが成功しました。"
     else
       error "Brakemanチェックでエラーが発生しました。pushを中止します。"
