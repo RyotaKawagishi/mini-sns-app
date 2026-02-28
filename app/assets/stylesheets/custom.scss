@@ -1,12 +1,18 @@
 @import "bootstrap-sprockets";
 @import "bootstrap";
 
+// Twitter color scheme
+$twitter-blue: #1DA1F2;
+$twitter-blue-hover: #1a91da;
+$twitter-light-gray: #E1E8ED;
+$twitter-dark-gray: #657786;
+
 /* mixins, variables, etc. */
 
 $gray-medium-light: #eaeaea;
 $mention-background-color: #eaeaea;
-$mention-link-color: #0056b3;
-$mention-link-hover-color: #003f7f; /* Darker hover color */
+$mention-link-color: $twitter-blue;
+$mention-link-hover-color: $twitter-blue-hover;
 
 @mixin box_sizing {
   -moz-box-sizing:    border-box;
@@ -64,6 +70,63 @@ p {
 
 
 /* header */
+
+// Twitter blue navbar
+.navbar-inverse {
+  background-color: $twitter-blue;
+  border-color: $twitter-blue;
+  
+  .navbar-nav > li > a {
+    color: white;
+    &:hover {
+      color: white;
+      background-color: $twitter-blue-hover;
+    }
+  }
+  
+  .navbar-nav > .open > a,
+  .navbar-nav > .open > a:hover,
+  .navbar-nav > .open > a:focus {
+    background-color: $twitter-blue-hover;
+    color: white;
+  }
+  
+  .navbar-toggle {
+    border-color: rgba(255, 255, 255, 0.3);
+    .icon-bar {
+      background-color: white;
+    }
+    &:hover,
+    &:focus {
+      background-color: $twitter-blue-hover;
+    }
+  }
+}
+
+// Twitter blue buttons
+.btn-primary {
+  background-color: $twitter-blue;
+  border-color: $twitter-blue;
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    background-color: $twitter-blue-hover;
+    border-color: $twitter-blue-hover;
+  }
+}
+
+// Twitter blue links (general content links, not navbar/footer)
+p a,
+.content a,
+section a:not(.btn):not(.navbar-nav a):not(footer a) {
+  color: $twitter-blue;
+  &:hover,
+  &:focus {
+    color: $twitter-blue-hover;
+    text-decoration: underline;
+  }
+}
 
 #logo {
   float: left;
@@ -182,7 +245,7 @@ aside {
     }
     &:hover {
       text-decoration: none;
-      color: blue;
+      color: $twitter-blue;
     }
   }
   strong {
@@ -212,10 +275,55 @@ input, textarea {
   width: 100%;
   margin-bottom: 15px;
   @include box_sizing;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  
+  &:focus {
+    outline: 0;
+    border-color: $twitter-blue;
+    box-shadow: 0 0 0 0.2rem rgba(29, 161, 242, 0.25);
+  }
 }
 
 input {
   height: auto !important;
+}
+
+// Password toggle button
+.password-field-wrapper {
+  position: relative;
+  
+  .form-control {
+    padding-right: 60px;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $twitter-blue;
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: color 0.2s ease, transform 0.2s ease;
+    
+    &:hover {
+      color: $twitter-blue-hover;
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline: none;
+      color: $twitter-blue-hover;
+    }
+    
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
 }
 
 #error_explanation {
