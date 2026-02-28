@@ -1,3 +1,13 @@
+# 開発用のデフォルトユーザーを作成する
+User.find_or_create_by!(email: "example@example.com") do |user|
+  user.name = "Example User"
+  user.password = "password"
+  user.password_confirmation = "password"
+  user.admin = true
+  user.activated = true
+  user.activated_at = Time.zone.now
+end
+
 # メインのサンプルユーザーを1人作成する
 User.find_or_create_by!(email: "example1@railstutorial.org") do |user|
   user.name =  "Example User"

@@ -69,9 +69,14 @@ bin/rails db:seed
 ```
 
 これにより、以下のサンプルデータが作成されます：
+- 開発用デフォルトユーザー（email: `example@example.com`, password: `password`）
 - サンプルユーザー（管理者1名、一般ユーザー101名）
 - サンプルマイクロポスト
 - フォロー関係
+
+**開発用ログイン情報:**
+- Email: `example@example.com`
+- Password: `password`
 
 ### 5. Git Hooksのセットアップ（推奨）
 
