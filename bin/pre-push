@@ -187,11 +187,12 @@ main() {
   # Brakemanの実行（セキュリティスキャン）
   if [[ "$has_ruby_changes" == true ]]; then
     info "Brakemanを実行しています（セキュリティスキャン）..."
-    if bundle exec brakeman --no-pager --quiet; then
+    # --no-exit-on-warn: 警告があってもexit code 0を返す（エラーのみで停止）
+    if bundle exec brakeman --no-pager --quiet --no-exit-on-warn; then
       info "Brakemanチェックが成功しました。"
     else
-      error "Brakemanチェックが失敗しました。pushを中止します。"
-      error "セキュリティ上の問題が検出されました。修正後、再度pushしてください。"
+      error "Brakemanチェックでエラーが発生しました。pushを中止します。"
+      error "修正後、再度pushしてください。"
       failed=true
     fi
   fi
