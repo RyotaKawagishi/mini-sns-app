@@ -237,7 +237,7 @@ main() {
         npm install --silent
       fi
       local js_files
-      js_files=$(echo "$js_changes" | grep -E '\.js$' | tr '\n' ' ')
+      js_files=$(echo "$js_changes" | grep -E '\.js$' | grep -v -E '\.eslintrc\.js|\.stylelintrc\.js' | tr '\n' ' ')
       if [[ -n "$js_files" ]]; then
         if npm run lint -- $js_files; then
           info "ESLintチェックが成功しました。"
