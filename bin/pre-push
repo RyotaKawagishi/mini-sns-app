@@ -125,24 +125,28 @@ get_related_specs() {
   done
 }
 
-# 変更ファイルを取得（新規追加・変更・コピー・リネームを含む）
+# 変更ファイルを取得（新規追加・変更・コピー・リネーム・削除を含む）
 # stdin形式: local_ref local_sha remote_ref remote_sha
 # remote_sha..local_sha の差分がpush対象
-# --diff-filter=ACMR: A=Added(新規追加), C=Copied(コピー), M=Modified(変更), R=Renamed(リネーム)
+# --diff-filter=ACMRD: A=Added(新規追加), C=Copied(コピー), M=Modified(変更), R=Renamed(リネーム), D=Deleted(削除)
 get_changed_files() {
   local remote_sha="$1"
   local local_sha="$2"
 
-  # 新規ブランチのpush（remote_shaが40個の0または空）の場合は全変更ファイルを対象
+  # 新規ブランチのpush（remote_shaが40個の0または空）の場合は、
+  # リモート追跡ブランチにまだ存在しないコミット群を対象にする
   if [[ -z "$remote_sha" || "$remote_sha" == 0000000000000000000000000000000000000000 ]]; then
-    # 新規ブランチの場合、そのコミットに含まれる全ファイル（新規追加含む）を取得
-    # git diff-treeを使うことで、新規ブランチでも正しく動作する
-    git diff-tree --no-commit-id --name-only --diff-filter=ACMR -r "$local_sha" 2>/dev/null || \
-    git show --name-only --pretty=format: --diff-filter=ACMR "$local_sha" 2>/dev/null || \
-    echo ""
+    local unpushed_commits
+    unpushed_commits=$(git rev-list "$local_sha" --not --remotes 2>/dev/null || true)
+
+    if [[ -n "$unpushed_commits" ]]; then
+      git diff-tree --no-commit-id --name-only --diff-filter=ACMRD -r $unpushed_commits 2>/dev/null | sort -u
+    else
+      echo ""
+    fi
   else
-    # 既存ブランチの場合、リモートとの差分（新規追加含む）を取得
-    git diff --name-only --diff-filter=ACMR "$remote_sha".."$local_sha"
+    # 既存ブランチの場合、リモートとの差分（削除含む）を取得
+    git diff --name-only --diff-filter=ACMRD "$remote_sha".."$local_sha"
   fi
 }
 
@@ -356,6 +360,15 @@ main() {
           error "修正後、再度pushしてください。"
           failed=true
         fi
+      fi
+    else
+      warn "関連するspecを特定できなかったため、全specを実行します。"
+      if bundle exec rspec spec; then
+        info "すべてのテストが成功しました。"
+      else
+        error "テストが失敗しました。pushを中止します。"
+        error "修正後、再度pushしてください。"
+        failed=true
       fi
     fi
   fi
