@@ -61,6 +61,11 @@ group :development do
 
   # Preview email in the browser instead of sending [https://github.com/ryanb/letter_opener]
   gem "letter_opener"
+
+  # Ruby linter and formatter
+  gem "rubocop", "~> 1.60", require: false
+  gem "rubocop-rails", "~> 2.23", require: false
+  gem "rubocop-rspec", "~> 2.26", require: false
 end
 
 group :test do

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # frozen_string_literal: true
 #
-# pre-push hook: push前に変更されたファイルに関連するRSpecテストのみを実行し、
-# テストが失敗した場合はpushを阻止する
+# pre-push hook: push前に変更されたファイルに関連するRSpecテスト、RuboCop、ESLintを実行し、
+# いずれかが失敗した場合はpushを阻止する
 #
 # セットアップ: bin/setup-git-hooks を実行するか、このファイルを .git/hooks/pre-push にコピーしてください
 
@@ -154,44 +154,103 @@ main() {
 
   # Ruby/RSpecの変更を検出（.rbファイルまたはspec関連）
   local ruby_changes
-  ruby_changes=$(echo "$all_changed_files" | grep -E '\.(rb)$|^spec/|^app/|^config/|^db/|Gemfile' || true)
-  if [[ -z "$ruby_changes" ]]; then
-    info "RSpecに関連する変更がありません。pushを続行します。"
+  ruby_changes=$(echo "$all_changed_files" | grep -E '\.(rb)$|^spec/|^app/|^config/|^db/|Gemfile|\.rubocop\.yml' || true)
+
+  # JavaScriptの変更を検出（.jsファイル）
+  local js_changes
+  js_changes=$(echo "$all_changed_files" | grep -E '\.(js)$|^app/javascript/|package\.json|\.eslintrc' || true)
+
+  local has_ruby_changes=false
+  local has_js_changes=false
+  [[ -n "$ruby_changes" ]] && has_ruby_changes=true
+  [[ -n "$js_changes" ]] && has_js_changes=true
+
+  if [[ "$has_ruby_changes" != true && "$has_js_changes" != true ]]; then
+    info "RSpec/RuboCop/ESLintに関連する変更がありません。pushを続行します。"
     exit 0
   fi
 
-  local specs_to_run
-  specs_to_run=$(get_related_specs "$ruby_changes")
+  local failed=false
 
-  if [[ -z "$specs_to_run" ]]; then
-    info "実行するspecがありません。pushを続行します。"
-    exit 0
-  fi
-
-  info "関連するRSpecテストを実行しています..."
-  if [[ "$specs_to_run" == "spec" ]]; then
-    info "全specを実行します（設定・DB・サポート等の変更を検出）"
-    if bundle exec rspec spec; then
-      info "すべてのテストが成功しました。pushを続行します。"
-      exit 0
-    else
-      error "テストが失敗しました。pushを中止します。"
-      error "修正後、再度pushしてください。"
-      exit 1
+  # RuboCopの実行
+  if [[ "$has_ruby_changes" == true ]]; then
+    local rb_files
+    rb_files=$(echo "$ruby_changes" | grep -E '\.rb$' | tr '\n' ' ')
+    if [[ -n "$rb_files" ]]; then
+      info "RuboCopを実行しています..."
+      if bundle exec rubocop $rb_files; then
+        info "RuboCopチェックが成功しました。"
+      else
+        error "RuboCopチェックが失敗しました。pushを中止します。"
+        error "修正後、再度pushしてください。"
+        failed=true
+      fi
     fi
   fi
 
-  local spec_files
-  spec_files=$(echo "$specs_to_run" | tr '\n' ' ')
-  info "実行対象: $spec_files"
-  if bundle exec rspec $spec_files; then
-    info "すべてのテストが成功しました。pushを続行します。"
-    exit 0
-  else
-    error "テストが失敗しました。pushを中止します。"
-    error "修正後、再度pushしてください。"
+  # ESLintの実行
+  if [[ "$has_js_changes" == true ]]; then
+    info "ESLintを実行しています..."
+    if command -v npm >/dev/null 2>&1 && [[ -f package.json ]]; then
+      if [[ ! -d node_modules ]]; then
+        warn "node_modulesが見つかりません。npm installを実行します..."
+        npm install --silent
+      fi
+      local js_files
+      js_files=$(echo "$js_changes" | grep -E '\.js$' | tr '\n' ' ')
+      if [[ -n "$js_files" ]]; then
+        if npm run lint -- $js_files; then
+          info "ESLintチェックが成功しました。"
+        else
+          error "ESLintチェックが失敗しました。pushを中止します。"
+          error "修正後、再度pushしてください。"
+          failed=true
+        fi
+      else
+        info "ESLint対象のJavaScriptファイルがありません。"
+      fi
+    else
+      warn "npmが見つからないか、package.jsonが存在しません。ESLintチェックをスキップします。"
+    fi
+  fi
+
+  # RSpecの実行
+  if [[ "$has_ruby_changes" == true ]]; then
+    local specs_to_run
+    specs_to_run=$(get_related_specs "$ruby_changes")
+
+    if [[ -n "$specs_to_run" ]]; then
+      info "関連するRSpecテストを実行しています..."
+      if [[ "$specs_to_run" == "spec" ]]; then
+        info "全specを実行します（設定・DB・サポート等の変更を検出）"
+        if bundle exec rspec spec; then
+          info "すべてのテストが成功しました。"
+        else
+          error "テストが失敗しました。pushを中止します。"
+          error "修正後、再度pushしてください。"
+          failed=true
+        fi
+      else
+        local spec_files
+        spec_files=$(echo "$specs_to_run" | tr '\n' ' ')
+        info "実行対象: $spec_files"
+        if bundle exec rspec $spec_files; then
+          info "すべてのテストが成功しました。"
+        else
+          error "テストが失敗しました。pushを中止します。"
+          error "修正後、再度pushしてください。"
+          failed=true
+        fi
+      fi
+    fi
+  fi
+
+  if [[ "$failed" == true ]]; then
     exit 1
   fi
+
+  info "すべてのチェックが成功しました。pushを続行します。"
+  exit 0
 }
 
 main

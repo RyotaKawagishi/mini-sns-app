@@ -1,11 +1,14 @@
 # Git Hooks
 
-このプロジェクトでは、push前にRSpecテストを自動実行するpre-push hookを提供しています。
+このプロジェクトでは、push前にRuboCop、ESLint、RSpecテストを自動実行するpre-push hookを提供しています。
 
 ## pre-push hookの概要
 
-- **目的**: push前に変更されたファイルに関連するRSpecテストのみを実行し、テストが失敗した場合はpushを阻止する
-- **メリット**: 実行時間を短縮（関連specのみ実行）、テスト失敗時のpush防止
+- **目的**: push前に変更されたファイルに関連するRuboCop、ESLint、RSpecテストを実行し、いずれかが失敗した場合はpushを阻止する
+- **メリット**: 
+  - コード品質の担保（RuboCop、ESLint）
+  - 実行時間を短縮（関連specのみ実行）
+  - テスト失敗時のpush防止
 
 ## セットアップ
 
@@ -36,14 +39,31 @@ chmod +x .git/hooks/pre-push
 | config/*, db/*, spec/support/*, spec/factories/* | 全spec |
 | app/helpers/*, app/serializers/* 等 | 全spec |
 
+## 実行されるチェック
+
+### RuboCop
+- **対象**: 変更された`.rb`ファイル
+- **実行**: `bundle exec rubocop <変更されたファイル>`
+
+### ESLint
+- **対象**: 変更された`.js`ファイル
+- **実行**: `npm run lint <変更されたファイル>`
+- **注意**: `package.json`が存在し、`npm`がインストールされている必要があります
+
+### RSpec
+- **対象**: 変更されたファイルに関連するspecファイル
+- **実行**: `bundle exec rspec <関連するspecファイル>`
+
 ## 動作
 
 1. `git push` 実行時、pre-push hookが自動的に起動
 2. push対象の変更ファイルを取得
-3. 変更ファイルから関連するspecを特定
-4. 関連specのみを実行
-5. **成功時**: pushを続行（exit 0）
-6. **失敗時**: pushを阻止（exit 1）
+3. 変更ファイルの種類を判定（Ruby/JavaScript）
+4. 各チェックを順次実行:
+   - Rubyファイルがある場合: RuboCop → RSpec
+   - JavaScriptファイルがある場合: ESLint
+5. **すべて成功時**: pushを続行（exit 0）
+6. **いずれか失敗時**: pushを阻止（exit 1）
 
 ## 注意事項
 
