@@ -1,0 +1,17 @@
+= form_with model: @user do |f|
+  = render 'shared/error_messages', object: f.object
+  = f.label :name
+  = f.text_field :name, class: 'form-control'
+  = f.label :email
+  = f.email_field :email, class: 'form-control'
+  = f.label :password
+  .password-field-wrapper data-controller="password-toggle"
+    = f.password_field :password, class: 'form-control', data: { password_toggle_target: 'input' }
+    button.password-toggle type="button" data-action="click->password-toggle#toggle" data-password-toggle-target="toggle" aria-label="Show password"
+      | Show
+  = f.label :password_confirmation
+  .password-field-wrapper data-controller="password-toggle"
+    = f.password_field :password_confirmation, class: 'form-control', data: { password_toggle_target: 'input' }
+    button.password-toggle type="button" data-action="click->password-toggle#toggle" data-password-toggle-target="toggle" aria-label="Show password"
+      | Show
+  = f.submit yield(:button_text), class: "btn btn-primary"
