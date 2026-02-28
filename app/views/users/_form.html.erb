@@ -8,10 +8,16 @@
   <%= f.email_field :email, class: 'form-control' %>
 
   <%= f.label :password %>
-  <%= f.password_field :password, class: 'form-control' %>
+  <div class="password-field-wrapper" data-controller="password-toggle">
+    <%= f.password_field :password, class: 'form-control', data: { password_toggle_target: 'input' } %>
+    <button type="button" class="password-toggle" data-action="click->password-toggle#toggle" data-password-toggle-target="toggle" aria-label="Show password">Show</button>
+  </div>
 
   <%= f.label :password_confirmation %>
-  <%= f.password_field :password_confirmation, class: 'form-control' %>
+  <div class="password-field-wrapper" data-controller="password-toggle">
+    <%= f.password_field :password_confirmation, class: 'form-control', data: { password_toggle_target: 'input' } %>
+    <button type="button" class="password-toggle" data-action="click->password-toggle#toggle" data-password-toggle-target="toggle" aria-label="Show password">Show</button>
+  </div>
 
   <%= f.submit yield(:button_text), class: "btn btn-primary" %>
 <% end %>

@@ -275,10 +275,55 @@ input, textarea {
   width: 100%;
   margin-bottom: 15px;
   @include box_sizing;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  
+  &:focus {
+    outline: 0;
+    border-color: $twitter-blue;
+    box-shadow: 0 0 0 0.2rem rgba(29, 161, 242, 0.25);
+  }
 }
 
 input {
   height: auto !important;
+}
+
+// Password toggle button
+.password-field-wrapper {
+  position: relative;
+  
+  .form-control {
+    padding-right: 60px;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $twitter-blue;
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: color 0.2s ease, transform 0.2s ease;
+    
+    &:hover {
+      color: $twitter-blue-hover;
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline: none;
+      color: $twitter-blue-hover;
+    }
+    
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
 }
 
 #error_explanation {
