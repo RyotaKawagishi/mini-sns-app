@@ -227,24 +227,23 @@ main() {
     rb_files=$(echo "$ruby_changes" | grep -E '\.rb$' | tr '\n' ' ')
     if [[ -n "$rb_files" ]]; then
       info "RuboCopを実行しています..."
-      # 警告はstderrに出力されるが、exit codeは0（成功）の場合がある
-      # エラーのみでpushを阻止する
+      # exit code: 0=成功, 1=コードエラー, 2=設定エラー
       local rubocop_output
       rubocop_output=$(bundle exec rubocop $rb_files 2>&1)
       local rubocop_exit_code=$?
       if [[ $rubocop_exit_code -eq 0 ]]; then
         info "RuboCopチェックが成功しました。"
-      elif echo "$rubocop_output" | grep -qE "^(Inspecting|Offenses|Files:|[0-9]+ files inspected)"; then
-        # RuboCopが実際にファイルを検査した場合は、エラーとして扱う
+      elif [[ $rubocop_exit_code -eq 2 ]]; then
+        # 設定エラーの場合は警告として扱い、pushを続行
+        warn "RuboCopの設定に問題がある可能性があります:"
+        echo "$rubocop_output" | grep -E "warning|error|Error" | head -5 || echo "$rubocop_output" | tail -5
+        warn "pushを続行しますが、RuboCopの設定を確認してください。"
+      else
+        # コードエラー（exit code 1）の場合はpushを阻止
         error "RuboCopチェックが失敗しました。pushを中止します。"
-        echo "$rubocop_output" | grep -E "^[A-Z]|^[0-9]+ offense" || echo "$rubocop_output" | tail -20
+        echo "$rubocop_output" | grep -E "^(Inspecting|Offenses|Files:|[0-9]+ files inspected|[0-9]+ offense)" || echo "$rubocop_output" | tail -20
         error "修正後、再度pushしてください。"
         failed=true
-      else
-        # 設定エラーなどの場合は警告として扱う
-        warn "RuboCopの設定に問題がある可能性があります:"
-        echo "$rubocop_output" | tail -5
-        warn "pushを続行しますが、RuboCopの設定を確認してください。"
       fi
     fi
   fi
