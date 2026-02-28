@@ -117,17 +117,20 @@ get_related_specs() {
   done
 }
 
-# 変更ファイルを取得
+# 変更ファイルを取得（新規追加・変更・コピー・リネームを含む）
 # stdin形式: local_ref local_sha remote_ref remote_sha
 # remote_sha..local_sha の差分がpush対象
+# --diff-filter=ACMR: A=Added(新規追加), C=Copied(コピー), M=Modified(変更), R=Renamed(リネーム)
 get_changed_files() {
   local remote_sha="$1"
   local local_sha="$2"
 
   # 新規ブランチのpush（remote_shaが40個の0）の場合は全変更ファイルを対象
   if [[ "$remote_sha" == 0000000000000000000000000000000000000000 ]]; then
+    # 新規ブランチの場合、ベースコミットからの全変更（新規追加含む）を取得
     git diff --name-only --diff-filter=ACMR 0000000000000000000000000000000000000000.."$local_sha"
   else
+    # 既存ブランチの場合、リモートとの差分（新規追加含む）を取得
     git diff --name-only --diff-filter=ACMR "$remote_sha".."$local_sha"
   fi
 }
