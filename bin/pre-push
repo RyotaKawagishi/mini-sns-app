@@ -9,7 +9,15 @@
 set -e
 
 # リポジトリのルートディレクトリに移動
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# .git/hooks/pre-pushから実行される場合も考慮して、.gitディレクトリの親を取得
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "$SCRIPT_DIR" == *"/.git/hooks" ]]; then
+  # .git/hooks/pre-pushから実行される場合
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+else
+  # bin/pre-pushから直接実行される場合
+  REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
 cd "$REPO_ROOT"
 
 # 色付き出力
