@@ -200,7 +200,11 @@ main() {
     info "Brakemanを実行しています（セキュリティスキャン）..."
     # --no-exit-on-warn: 警告があってもexit code 0を返す（エラーのみで停止）
     # カレントディレクトリを明示的に指定（.gitディレクトリから実行される場合があるため）
-    if (cd "$REPO_ROOT" && bundle exec brakeman --no-pager --quiet --no-exit-on-warn); then
+    # サブシェルで実行してカレントディレクトリを確実に変更
+    if (
+      cd "$REPO_ROOT" || exit 1
+      bundle exec brakeman --no-pager --quiet --no-exit-on-warn
+    ); then
       info "Brakemanチェックが成功しました。"
     else
       error "Brakemanチェックでエラーが発生しました。pushを中止します。"
