@@ -142,6 +142,11 @@ main() {
   local all_changed_files=""
 
   while read -r local_ref local_sha remote_ref remote_sha; do
+    # remote_shaが空の場合は、新規ブランチのpushとして扱う
+    if [[ -z "$remote_sha" || "$remote_sha" == "0"* ]]; then
+      remote_sha="0000000000000000000000000000000000000000"
+    fi
+    
     [[ -z "$local_sha" || "$local_sha" == "0"* ]] && continue
 
     local changed_files
