@@ -66,6 +66,12 @@ group :development do
   gem "rubocop", "~> 1.60", require: false
   gem "rubocop-rails", "~> 2.23", require: false
   gem "rubocop-rspec", "~> 2.26", require: false
+
+  # Security scanner for Rails
+  gem "brakeman", "~> 6.0", require: false
+
+  # Slim template linter
+  gem "slim_lint", "~> 0.24", require: false
 end
 
 group :test do

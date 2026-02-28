@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # frozen_string_literal: true
 #
-# pre-push hook: push前に変更されたファイルに関連するRSpecテスト、RuboCop、ESLintを実行し、
-# いずれかが失敗した場合はpushを阻止する
+# pre-push hook: push前に変更されたファイルに関連するRSpecテスト、RuboCop、ESLint、Stylelint、
+# Brakeman、Slim-Lintを実行し、いずれかが失敗した場合はpushを阻止する
 #
 # セットアップ: bin/setup-git-hooks を実行するか、このファイルを .git/hooks/pre-push にコピーしてください
 
@@ -160,17 +160,41 @@ main() {
   local js_changes
   js_changes=$(echo "$all_changed_files" | grep -E '\.(js)$|^app/javascript/|package\.json|\.eslintrc' || true)
 
+  # SCSS/CSSの変更を検出
+  local scss_changes
+  scss_changes=$(echo "$all_changed_files" | grep -E '\.(scss|css)$|^app/assets/stylesheets/|\.stylelintrc' || true)
+
+  # Slimテンプレートの変更を検出
+  local slim_changes
+  slim_changes=$(echo "$all_changed_files" | grep -E '\.slim$|^app/views/' || true)
+
   local has_ruby_changes=false
   local has_js_changes=false
+  local has_scss_changes=false
+  local has_slim_changes=false
   [[ -n "$ruby_changes" ]] && has_ruby_changes=true
   [[ -n "$js_changes" ]] && has_js_changes=true
+  [[ -n "$scss_changes" ]] && has_scss_changes=true
+  [[ -n "$slim_changes" ]] && has_slim_changes=true
 
-  if [[ "$has_ruby_changes" != true && "$has_js_changes" != true ]]; then
-    info "RSpec/RuboCop/ESLintに関連する変更がありません。pushを続行します。"
+  if [[ "$has_ruby_changes" != true && "$has_js_changes" != true && "$has_scss_changes" != true && "$has_slim_changes" != true ]]; then
+    info "lint/テストに関連する変更がありません。pushを続行します。"
     exit 0
   fi
 
   local failed=false
+
+  # Brakemanの実行（セキュリティスキャン）
+  if [[ "$has_ruby_changes" == true ]]; then
+    info "Brakemanを実行しています（セキュリティスキャン）..."
+    if bundle exec brakeman --no-pager --quiet; then
+      info "Brakemanチェックが成功しました。"
+    else
+      error "Brakemanチェックが失敗しました。pushを中止します。"
+      error "セキュリティ上の問題が検出されました。修正後、再度pushしてください。"
+      failed=true
+    fi
+  fi
 
   # RuboCopの実行
   if [[ "$has_ruby_changes" == true ]]; then
@@ -182,6 +206,22 @@ main() {
         info "RuboCopチェックが成功しました。"
       else
         error "RuboCopチェックが失敗しました。pushを中止します。"
+        error "修正後、再度pushしてください。"
+        failed=true
+      fi
+    fi
+  fi
+
+  # Slim-Lintの実行
+  if [[ "$has_slim_changes" == true ]]; then
+    local slim_files
+    slim_files=$(echo "$slim_changes" | grep -E '\.slim$' | tr '\n' ' ')
+    if [[ -n "$slim_files" ]]; then
+      info "Slim-Lintを実行しています..."
+      if bundle exec slim-lint $slim_files; then
+        info "Slim-Lintチェックが成功しました。"
+      else
+        error "Slim-Lintチェックが失敗しました。pushを中止します。"
         error "修正後、再度pushしてください。"
         failed=true
       fi
@@ -211,6 +251,32 @@ main() {
       fi
     else
       warn "npmが見つからないか、package.jsonが存在しません。ESLintチェックをスキップします。"
+    fi
+  fi
+
+  # Stylelintの実行
+  if [[ "$has_scss_changes" == true ]]; then
+    info "Stylelintを実行しています..."
+    if command -v npm >/dev/null 2>&1 && [[ -f package.json ]]; then
+      if [[ ! -d node_modules ]]; then
+        warn "node_modulesが見つかりません。npm installを実行します..."
+        npm install --silent
+      fi
+      local scss_files
+      scss_files=$(echo "$scss_changes" | grep -E '\.(scss|css)$' | tr '\n' ' ')
+      if [[ -n "$scss_files" ]]; then
+        if npm run lint:css -- $scss_files; then
+          info "Stylelintチェックが成功しました。"
+        else
+          error "Stylelintチェックが失敗しました。pushを中止します。"
+          error "修正後、再度pushしてください。"
+          failed=true
+        fi
+      else
+        info "Stylelint対象のSCSS/CSSファイルがありません。"
+      fi
+    else
+      warn "npmが見つからないか、package.jsonが存在しません。Stylelintチェックをスキップします。"
     fi
   fi
 
