@@ -140,7 +140,8 @@ get_changed_files() {
     unpushed_commits=$(git rev-list "$local_sha" --not --remotes 2>/dev/null || true)
 
     if [[ -n "$unpushed_commits" ]]; then
-      git diff-tree --no-commit-id --name-only --diff-filter=ACMRD -r $unpushed_commits 2>/dev/null | sort -u
+      # --stdinを使用して複数コミットを正しく処理
+      echo "$unpushed_commits" | git diff-tree --stdin --no-commit-id --name-only --diff-filter=ACMRD -r 2>/dev/null | sort -u
     else
       echo ""
     fi
