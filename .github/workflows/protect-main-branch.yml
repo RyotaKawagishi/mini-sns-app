@@ -1,0 +1,28 @@
+name: Protect Main Branch
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  prevent-direct-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from develop branch
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_BRANCH" != "develop" ] || [ "$HEAD_REPOSITORY" != "$BASE_REPOSITORY" ]; then
+            echo "❌ Error: mainブランチへの直接マージは許可されていません。"
+            echo "developブランチ経由でマージしてください。"
+            exit 1
+          fi
+          
+          echo "✅ PR is from this repository's develop branch"
