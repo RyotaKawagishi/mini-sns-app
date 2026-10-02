@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.2.6"
+ruby "3.3.12"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.1.5", ">= 7.1.5.1"
@@ -94,5 +94,8 @@ gem "pundit",          "~> 2.3"
 gem "slim"
 
 group :production do
+  gem "aws-sdk-s3", "~> 1.0", require: false
+  gem "dotenv", "~> 3.0", require: false
+  gem "webrick", "~> 1.8"
   gem "pg", "1.3.5"
 end

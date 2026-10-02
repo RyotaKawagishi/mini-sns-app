@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+  if [[ -z "${!name:-}" ]]; then
+    echo "Required deployment variable is missing: $name" >&2
+    exit 1
+  fi
+done
+vercel=(npx --yes vercel@62.2.0)
+"${vercel[@]}" pull --yes --environment=production --token="$VERCEL_TOKEN"
+"${vercel[@]}" build --prod --token="$VERCEL_TOKEN"
+# Load Vercel's production variables without evaluating them as shell code.
+bundle exec ruby -r dotenv -e '
+  Dotenv.load(".vercel/.env.production.local")
+  ENV["RAILS_ENV"] = "production"
+  required = %w[DATABASE_URL SECRET_KEY_BASE APP_HOST SMTP_USERNAME SMTP_PASSWORD MAILER_FROM AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_S3_BUCKET]
+  missing = required.reject { |name| ENV[name] && !ENV[name].empty? }
+  abort "Missing production variables: #{missing.join(", ")}" unless missing.empty?
+  abort "APP_HOST must be a hostname without https:// or a path" if ENV["APP_HOST"].match?(%r{[/:]})
+  exec("bundle", "exec", "rails", "db:migrate")
+'
+"${vercel[@]}" deploy --prebuilt --prod --token="$VERCEL_TOKEN"

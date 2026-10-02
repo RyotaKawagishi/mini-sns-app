@@ -36,3 +36,6 @@
 
 # Ignore node_modules
 /node_modules/
+
+# Vercel project linkage and downloaded credentials.
+/.vercel

@@ -1,15 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "bundle install && npm ci && bin/rails assets:precompile",
+  "buildCommand": "bin/vercel-build",
   "devCommand": "bin/rails server",
   "installCommand": "bundle install && npm ci",
   "framework": null,
   "outputDirectory": "public",
   "routes": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
@@ -18,13 +17,13 @@
   ],
   "functions": {
     "api/index.rb": {
-      "runtime": "ruby3.2",
       "memory": 1024,
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "{app,config,db,lib,public}/**"
     }
   },
   "env": {
     "RAILS_ENV": "production",
-    "RAILS_LOG_TO_STDOUT": "true"
+    "BOOTSNAP_CACHE_DIR": "/tmp/bootsnap"
   }
 }
