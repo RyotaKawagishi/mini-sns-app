@@ -34,7 +34,7 @@ RSpec.describe 'Vercel Rack adapter', type: :request do
 
   it 'preserves form bodies, query strings, headers and separate cookies' do
     received = nil
-    body = instance_double(Rack::BodyProxy)
+    body = instance_double(StringIO)
     allow(body).to receive(:each).and_yield('result')
     allow(body).to receive(:close)
     allow(Rails.application).to receive(:call) do |env|
