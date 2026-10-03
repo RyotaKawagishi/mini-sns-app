@@ -30,7 +30,7 @@ class LikesController < ApplicationController
   # @return [void]
   def respond_to_change
     respond_to do |format|
-      format.html { redirect_back_or_to(root_path, status: :see_other) }
+      format.html { redirect_back_or_to(root_path, allow_other_host: false, status: :see_other) }
       format.turbo_stream { render :update }
     end
   end
