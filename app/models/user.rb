@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_many :likes, dependent: :destroy
   has_many :microposts, dependent: :destroy
   has_many :active_relationships,  class_name:  "Relationship",
                                    foreign_key: "follower_id",
@@ -107,7 +108,7 @@ class User < ApplicationRecord
     part_of_feed = "relationships.follower_id = :id or microposts.user_id = :id or microposts.in_reply_to = :id"
     Micropost.left_outer_joins(user: :followers)
              .where(part_of_feed, { id: id }).distinct
-             .includes(:user, image_attachment: :blob)
+             .includes(:user, :likes, image_attachment: :blob)
   end
 
   # ユーザーをフォローする
