@@ -48,9 +48,9 @@ RSpec.describe 'Searches', type: :request do
   it 'rejects invalid and reversed dates without raising' do
     log_in_as(user)
     get searches_path, params: { type: 'microposts', from_date: 'invalid' }
-    expect(response.body).to include('日付を正しく')
+    expect(response.body).to include('Please enter a valid date')
     get searches_path, params: { type: 'microposts', from_date: '2026-09-03', to_date: '2026-09-02' }
-    expect(response.body).to include('開始日は終了日以前')
+    expect(response.body).to include('Start date must be on or before end date')
   end
 
   it 'paginates results and preserves filters' do
@@ -64,7 +64,7 @@ RSpec.describe 'Searches', type: :request do
   it 'treats wildcard and SQL syntax as literal input' do
     log_in_as(user)
     get searches_path, params: { query: "%_' OR 1=1 --" }
-    expect(response.body).to include('該当するユーザーはありません')
+    expect(response.body).to include('No users found')
   end
 end
 

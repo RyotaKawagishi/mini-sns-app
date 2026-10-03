@@ -48,8 +48,8 @@ class Search
   def valid_date_range
     start_date = Date.iso8601(from_date) if from_date.present?
     end_date = Date.iso8601(to_date) if to_date.present?
-    errors.add(:base, '開始日は終了日以前にしてください') if start_date && end_date && start_date > end_date
+    errors.add(:base, 'Start date must be on or before end date.') if start_date && end_date && start_date > end_date
   rescue ArgumentError, TypeError
-    errors.add(:base, '日付を正しく入力してください')
+    errors.add(:base, 'Please enter a valid date.')
   end
 end

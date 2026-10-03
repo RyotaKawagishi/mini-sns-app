@@ -1,34 +1,34 @@
-- provide(:title, '検索')
-h1 検索
+- provide(:title, 'Search')
+h1 Search
 = form_with url: searches_path, method: :get, local: true do |form|
-  = form.label :type, '検索対象'
-  = form.select :type, [%w[ユーザー users], %w[投稿 microposts]],
+  = form.label :type, 'Search for'
+  = form.select :type, [%w[Users users], %w[Posts microposts]],
       selected: params[:type]
-  = form.label :query, '名前 / 投稿内容'
+  = form.label :query, 'Name / post content'
   - if current_user.admin?
-    p 管理者はメールアドレスでも検索できます。
+    p Admins can also search by email address.
   = form.search_field :query, value: params[:query], class: 'form-control'
-  = form.label :author_id, '投稿者ID（投稿検索）'
+  = form.label :author_id, 'Author ID (posts)'
   = form.number_field :author_id, value: params[:author_id],
       min: 1, class: 'form-control'
-  = form.label :from_date, '開始日（投稿検索）'
+  = form.label :from_date, 'Start date (posts)'
   = form.date_field :from_date, value: params[:from_date], class: 'form-control'
-  = form.label :to_date, '終了日（投稿検索）'
+  = form.label :to_date, 'End date (posts)'
   = form.date_field :to_date, value: params[:to_date], class: 'form-control'
-  = form.submit '検索', class: 'btn btn-primary'
+  = form.submit 'Search', class: 'btn btn-primary'
 - @search.errors.full_messages.each do |message|
   .alert.alert-danger = message
 - if @microposts
-  h2 投稿の検索結果
+  h2 Post results
   - if @microposts.empty?
-    p 該当する投稿はありません。
+    p No posts found.
   ol.microposts
     = render partial: 'microposts/micropost', collection: @microposts
   = will_paginate @microposts
 - else
-  h2 ユーザーの検索結果
+  h2 User results
   - if @users.empty?
-    p 該当するユーザーはありません。
+    p No users found.
   ul.users
     = render partial: 'users/user', collection: @users
   = will_paginate @users
