@@ -14,7 +14,7 @@ class UsersController < ApplicationController
   def show
     @user = User.find(params[:id])
     authorize @user
-    @microposts = @user.microposts.paginate(page: params[:page])
+    @microposts = @user.microposts.includes(:user, :likes, image_attachment: :blob).paginate(page: params[:page])
   end
 
   # @return [void]
