@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "/up", to: "rails/health#show"
  
   root "static_pages#home"
 
