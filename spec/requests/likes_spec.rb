@@ -35,6 +35,13 @@ RSpec.describe 'Likes', type: :request do
     expect(response).to redirect_to(root_path)
   end
 
+  it 'does not redirect to an external referrer' do
+    log_in_as(user)
+    post likes_path, params: { micropost_id: micropost.id },
+                     headers: { 'HTTP_REFERER' => 'https://attacker.example/' }
+    expect(response).to redirect_to(root_path)
+  end
+
   it 'renders buttons on the home feed and profile' do
     micropost.update!(user: user)
     log_in_as(user)
