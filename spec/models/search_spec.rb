@@ -8,7 +8,7 @@ require 'rails_helper'
 RSpec.describe Search, type: :model do
   subject(:search) { described_class.new(query: 'content') }
 
-  it 'matches literal wildcard characters on SQLite and PostgreSQL' do
+  it 'matches literal wildcard characters as literal input' do
     target = create(:user, name: '100%_matched')
     create(:user, name: '100Xmatched')
     expect(described_class.new(query: '%_').users(User.all)).to eq([target])
@@ -25,6 +25,7 @@ RSpec.describe Search, type: :model do
       posts.each do |post|
         post.user.name
         post.image.attached?
+        post.likes.size
       end
       expect(posts.size).to eq(20)
     end

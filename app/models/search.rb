@@ -26,7 +26,7 @@ class Search
     scope = scope.where("LOWER(content) LIKE LOWER(?) ESCAPE '!'", query_pattern) if query.present?
     scope = scope.where(user_id: author_id) if author_id.present?
     scope = filter_dates(scope)
-    scope.reorder(created_at: :desc, id: :desc).includes(:user, image_attachment: :blob)
+    scope.reorder(created_at: :desc, id: :desc).includes(:user, :likes, image_attachment: :blob)
   end
 
   private
