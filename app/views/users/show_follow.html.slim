@@ -18,5 +18,5 @@
     h3= @title
     - if @users.any?
       ul.users.follow
-        = render @users
+        = render partial: "users/user", collection: @users
       = will_paginate

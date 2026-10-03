@@ -52,8 +52,7 @@ jobs:
 
       - name: Run Brakeman (Security Scan)
         if: steps.changes.outputs.has_ruby_changes == 'true'
-        continue-on-error: true
-        run: bundle exec brakeman --no-pager --quiet --no-exit-on-warn || true
+        run: bundle exec brakeman --no-pager --quiet
 
       - name: Run RuboCop
         if: steps.changes.outputs.has_ruby_changes == 'true' && steps.changes.outputs.ruby_files != ''
