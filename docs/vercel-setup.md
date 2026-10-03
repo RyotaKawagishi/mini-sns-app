@@ -34,7 +34,7 @@ Project → Settings → Environment Variablesに登録します。値をPRや�
 
 `RAILS_ENV=production`と`BOOTSNAP_CACHE_DIR=/tmp/bootsnap`は`vercel.json`で設定済みです。
 S3は非公開バケットとし、署名付きURLで取得します。ローカルDiskへの保存は本番では使用しません。
-VercelではImageMagickを前提とせず原本を表示し、CSSで250px以内に収めます。画像解析・プレビュー生成は無効です。
+VercelではImageMagickを前提とせず原本を表示し、CSSで250px以内に収めます。画像解析・プレビュー生成は無効です。Active Jobはinline実行し、画像削除などがリクエスト終了後の非永続workerに残らないようにします。
 画像の送信サイズ上限はVercelのFunctionリクエスト制限も受けます。大きな画像が必要な場合はS3への直接アップロードを別途導入してください。
 
 ## GitHub Secretsと公開手順

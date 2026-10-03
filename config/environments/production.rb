@@ -98,6 +98,7 @@ Rails.application.configure do
 
   # Vercel has a read-only application directory and no background worker.
   if ENV["VERCEL"]
+    config.active_job.queue_adapter = :inline
     config.active_storage.analyzers = []
     config.active_storage.previewers = []
   end
