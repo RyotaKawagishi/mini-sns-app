@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
  
+  resources :searches, only: [:index]
+
   root "static_pages#home"
 
   get  "/help",    to: "static_pages#help"

@@ -1,0 +1,30 @@
+- provide(:title, "検索")
+h1 検索
+= form_with url: searches_path, method: :get, local: true do |form|
+  = form.label :type, "検索対象"
+  = form.select :type, [["ユーザー", "users"], ["投稿", "microposts"]], selected: params[:type]
+  = form.label :query, current_user.admin? ? "名前・メールアドレス / 投稿内容" : "名前 / 投稿内容"
+  = form.search_field :query, value: params[:query], class: "form-control"
+  = form.label :author_id, "投稿者ID（投稿検索）"
+  = form.number_field :author_id, value: params[:author_id], min: 1, class: "form-control"
+  = form.label :from_date, "開始日（投稿検索）"
+  = form.date_field :from_date, value: params[:from_date], class: "form-control"
+  = form.label :to_date, "終了日（投稿検索）"
+  = form.date_field :to_date, value: params[:to_date], class: "form-control"
+  = form.submit "検索", class: "btn btn-primary"
+- @search.errors.full_messages.each do |message|
+  .alert.alert-danger = message
+- if @microposts
+  h2 投稿の検索結果
+  - if @microposts.empty?
+    p 該当する投稿はありません。
+  ol.microposts
+    = render partial: "microposts/micropost", collection: @microposts
+  = will_paginate @microposts
+- else
+  h2 ユーザーの検索結果
+  - if @users.empty?
+    p 該当するユーザーはありません。
+  ul.users
+    = render partial: "users/user", collection: @users
+  = will_paginate @users
