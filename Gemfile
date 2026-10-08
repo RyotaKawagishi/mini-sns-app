@@ -3,13 +3,15 @@ source "https://rubygems.org"
 ruby "3.3.12"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.1.5", ">= 7.1.5.1"
+gem "rails", "~> 8.1.4"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
+# Sprockets 4 uses JSON.parse(create_additions:), removed in JSON 3.
+gem "json", "~> 2.0"
 
 # Use sqlite3 as the database for Active Record
-gem "sqlite3", "1.6.1"
+gem "sqlite3", "~> 2.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -65,10 +67,10 @@ group :development do
   # Ruby linter and formatter
   gem "rubocop", "~> 1.60", require: false
   gem "rubocop-rails", "~> 2.23", require: false
-  gem "rubocop-rspec", "~> 2.26", require: false
+  gem "rubocop-rspec", "~> 3.0", require: false
 
   # Security scanner for Rails
-  gem "brakeman", "~> 6.0", require: false
+  gem "brakeman", "~> 8.0", require: false
 
   # Slim template linter
   gem "slim_lint", "~> 0.24", require: false
@@ -78,7 +80,7 @@ group :test do
   gem "capybara",                 "3.38.0"
   gem "selenium-webdriver",       "4.8.3"
   gem "webdrivers",               "5.2.0"
-  gem "rspec-rails",              "~> 6.1"
+  gem "rspec-rails",              "~> 8.0"
   gem "factory_bot_rails",        "~> 6.4"
 end
 
@@ -88,7 +90,7 @@ gem "bcrypt",          "3.1.18"
 gem "faker",           "2.21.0"
 gem "will_paginate",           "3.3.1"
 gem "bootstrap-will_paginate", "1.0.0"
-gem "active_storage_validations", "0.9.8"
+gem "active_storage_validations", "~> 3.0"
 gem "image_processing",           "1.12.2"
 gem "pundit",          "~> 2.3"
 gem "slim"

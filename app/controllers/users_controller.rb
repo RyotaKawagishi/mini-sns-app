@@ -2,6 +2,7 @@ class UsersController < ApplicationController
 
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
                                         :following, :followers]
+  before_action :load_user, only: [:show, :edit, :update, :destroy, :following, :followers]
 
   # @return [void]
   def index
@@ -12,9 +13,8 @@ class UsersController < ApplicationController
   # @param id [Integer] ユーザーID
   # @return [void]
   def show
-    @user = User.find(params[:id])
     authorize @user
-    @microposts = @user.microposts.paginate(page: params[:page])
+    @microposts = @user.microposts.includes(:user, :likes, image_attachment: :blob).paginate(page: params[:page])
   end
 
   # @return [void]
@@ -41,7 +41,6 @@ class UsersController < ApplicationController
   # @param id [Integer] ユーザーID
   # @return [void]
   def edit
-    @user = User.find(params[:id])
     authorize @user
   end
   
@@ -49,7 +48,6 @@ class UsersController < ApplicationController
   # @param user_params [Hash] ユーザーパラメータ
   # @return [void]
   def update
-    @user = User.find(params[:id])
     authorize @user
     if @user.update(user_params)
       flash[:success] = "Profile updated"
@@ -62,7 +60,6 @@ class UsersController < ApplicationController
   # @param id [Integer] ユーザーID
   # @return [void]
   def destroy
-    @user = User.find(params[:id])
     authorize @user
     @user.destroy
     flash[:success] = "User deleted"
@@ -72,24 +69,31 @@ class UsersController < ApplicationController
   # @param id [Integer] ユーザーID
   # @return [void]
   def following
-    @title = "Following"
-    @user = User.find(params[:id])
-    authorize @user, :following?
-    @users = @user.following.paginate(page: params[:page])
-    render "show_follow"
+    render_relationships(:following, "Following")
   end
 
   # @param id [Integer] ユーザーID
   # @return [void]
   def followers
-    @title = "Followers"
-    @user = User.find(params[:id])
-    authorize @user, :followers?
-    @users = @user.followers.paginate(page: params[:page])
-    render "show_follow"
+    render_relationships(:followers, "Followers")
   end
 
   private
+
+    # @return [User] requested user
+    def load_user
+      @user = User.find(params[:id])
+    end
+
+    # @param association [Symbol] relationship association
+    # @param title [String] page title
+    # @return [void]
+    def render_relationships(association, title)
+      authorize @user, "#{association}?"
+      @title = title
+      @users = @user.public_send(association).paginate(page: params[:page])
+      render "show_follow"
+    end
 
     # @return [Hash] 許可されたユーザーパラメータ
     def user_params

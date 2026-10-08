@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
+  get "/up", to: "rails/health#show"
  
+  resources :searches, only: [:index]
+
   root "static_pages#home"
 
   get  "/help",    to: "static_pages#help"
@@ -14,12 +17,14 @@ Rails.application.routes.draw do
 
   resources :users do
     member do
-      get :following, :followers
+      get :following
+      get :followers
     end
   end
   resources :account_activations, only: [:edit]
   resources :password_resets,     only: [:new, :create, :edit, :update]
   resources :microposts,          only: [:create, :destroy]
+  resources :likes, only: [:create, :destroy]
   resources :relationships,       only: [:create, :destroy]
   
 

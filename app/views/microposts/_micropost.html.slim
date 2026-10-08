@@ -15,3 +15,4 @@ li id="micropost-#{micropost.id}"
     | ago.
     - if current_user?(micropost.user)
       =<> link_to "delete", micropost, data: { "turbo-method": :delete, turbo_confirm: "You sure?" }
+  = render "likes/button", micropost: micropost
