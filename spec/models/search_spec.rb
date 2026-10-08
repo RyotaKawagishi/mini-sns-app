@@ -18,7 +18,7 @@ RSpec.describe Search, type: :model do
     create_list(:micropost, 25, content: 'content')
     queries = []
     subscriber = lambda { |_name, _start, _finish, _id, payload|
-      queries << payload[:sql] if payload[:sql].start_with?('SELECT')
+      queries << payload[:sql] if payload[:sql].start_with?('SELECT') && payload[:name] != 'SCHEMA'
     }
     ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
       posts = search.microposts(Micropost.all).paginate(page: 1, per_page: 20)
