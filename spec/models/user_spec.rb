@@ -109,6 +109,8 @@ RSpec.describe User, type: :model do
   end
 
   describe "#feed" do
+    subject(:feed) { michael.feed }
+
     let(:michael) { create(:user) }
     let(:archer) { create(:user) }
     let(:lana) { create(:user) }
@@ -118,6 +120,31 @@ RSpec.describe User, type: :model do
       create_list(:micropost, 3, user: lana)
       create_list(:micropost, 3, user: michael)
       create_list(:micropost, 3, user: archer)
+    end
+
+    it "自分宛の返信を含め、重複なく新しい順に返すこと" do
+      reply = create(:micropost, user: archer, in_reply_to: michael.id)
+      create_list(:relationship, 3, followed: lana)
+      expected_ids = (lana.microposts.to_a + michael.microposts.to_a + [reply])
+                     .sort_by(&:created_at).reverse.map(&:id)
+
+      expect(feed.pluck(:id)).to eq(expected_ids)
+      expect(feed.limit(2).pluck(:id)).to eq(expected_ids.first(2))
+    end
+
+    it "フォロー先をRubyにロードせずJOINとDISTINCTなしで取得すること" do
+      statements = []
+      subscriber = lambda do |_name, _start, _finish, _id, payload|
+        statements << payload[:sql] if payload[:sql].start_with?("SELECT")
+      end
+
+      ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+        feed.except(:includes).pluck(:id)
+      end
+
+      expect(statements.size).to eq(1)
+      expect(statements.first).to include('SELECT "relationships"."followed_id"')
+      expect(statements.first).not_to match(/JOIN|DISTINCT/)
     end
 
     it "フォローしているユーザーの投稿がフィードに含まれること" do
@@ -130,7 +157,7 @@ RSpec.describe User, type: :model do
       michael.microposts.each do |post_self|
         expect(michael.feed).to include(post_self)
       end
-      expect(michael.feed.distinct).to eq michael.feed
+      expect(feed.to_a.uniq).to eq(feed.to_a)
     end
 
     it "フォローしていないユーザーの投稿がフィードに含まれないこと" do
