@@ -1,0 +1,9 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "98b26f60d776fd41ee6f088c833725145be9aac2d7c5b33780241c273622db42",
+      "note": "Vercel Ruby 3.3.0 compatibility workaround. Remove this exception and upgrade Rails before 2026-11-07."
+    }
+  ],
+  "updated": "2026-10-08"
+}
