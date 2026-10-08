@@ -6,7 +6,7 @@
 `vercel.json`は`public`の静的ファイルを先に配信し、それ以外をRailsに渡します。
 アプリケーションのソースとプリコンパイル済みassetsをFunctionへ同梱します。
 Rubyの対応バージョンは[公式Ruby runtime](https://vercel.com/docs/functions/runtimes/ruby)を参照してください。
-Ruby 3.3.12を指定しています。Vercelはpatch指定を無視し最新の3.3.xを使用します。
+ローカルとDockerでは`.ruby-version`のRuby 3.3.12を使用し、GemfileはVercelのRuby 3.3.xランタイムを許可します。
 
 ## Vercelプロジェクト
 
