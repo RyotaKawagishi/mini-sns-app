@@ -14,7 +14,7 @@ class UsersController < ApplicationController
   # @return [void]
   def show
     authorize @user
-    @microposts = @user.microposts.paginate(page: params[:page])
+    @microposts = @user.microposts.includes(:user, :likes, image_attachment: :blob).paginate(page: params[:page])
   end
 
   # @return [void]

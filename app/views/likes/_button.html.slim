@@ -1,0 +1,14 @@
+div id=dom_id(micropost, :likes)
+  span.likes-count = "#{micropost.likes.size} likes"
+  - if logged_in?
+    ruby:
+      like = micropost.likes.detect { |item| item.user_id == current_user.id }
+      label = like ? 'Unlike' : 'Like'
+      url = like ? like_path(like) : likes_path(micropost_id: micropost.id)
+    = button_to url, method: like ? :delete : :post,
+        class: 'btn btn-default like-button', title: label,
+        aria: { label: label, pressed: like.present? } do
+      svg.heart-icon viewBox="0 0 24 24" aria-hidden="true" focusable="false"
+        / slim-lint:disable LineLength
+        path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"
+        / slim-lint:enable LineLength

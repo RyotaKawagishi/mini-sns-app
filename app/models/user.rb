@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_many :likes, dependent: :destroy
   has_many :microposts, dependent: :destroy
   has_many :active_relationships,  class_name:  "Relationship",
                                    foreign_key: "follower_id",
@@ -108,7 +109,7 @@ class User < ApplicationRecord
     Micropost.where(user_id: followed_user_ids)
              .or(Micropost.where(user_id: id))
              .or(Micropost.where(in_reply_to: id))
-             .includes(:user, image_attachment: :blob)
+             .includes(:user, :likes, image_attachment: :blob)
   end
 
   # ユーザーをフォローする

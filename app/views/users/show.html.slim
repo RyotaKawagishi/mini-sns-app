@@ -15,5 +15,5 @@
         = @user.microposts.count
         | )
       ol.microposts
-        = render @microposts
+        = render partial: "microposts/micropost", collection: @microposts
       = will_paginate @microposts
