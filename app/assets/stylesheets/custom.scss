@@ -437,3 +437,27 @@ span.image {
   color: $mention-link-hover-color; 
   text-decoration: underline;
 }
+
+/* Like controls */
+.like-button {
+  padding: 2px 4px;
+
+  .heart-icon {
+    display: block;
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: #000;
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+  }
+
+  &[aria-pressed="true"] {
+    background-color: #555;
+
+    .heart-icon {
+      fill: #fff;
+      stroke: #fff;
+    }
+  }
+}

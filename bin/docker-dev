@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+export RUBY_VERSION="$(tr -d '[:space:]' < .ruby-version)"
+exec docker compose "$@"

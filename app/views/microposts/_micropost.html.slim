@@ -8,10 +8,11 @@ li id="micropost-#{micropost.id}"
   span.content
     = micropost.content
     - if micropost.image.attached?
-      = image_tag micropost.image.variant(:display)
+      = image_tag ENV["VERCEL"] ? micropost.image : micropost.image.variant(:display), style: "max-width: 250px; max-height: 250px;"
   span.timestamp
     | Posted
     =<> time_ago_in_words(micropost.created_at)
     | ago.
     - if current_user?(micropost.user)
       =<> link_to "delete", micropost, data: { "turbo-method": :delete, turbo_confirm: "You sure?" }
+  = render "likes/button", micropost: micropost

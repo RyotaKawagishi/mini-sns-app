@@ -69,9 +69,14 @@ bin/rails db:seed
 ```
 
 これにより、以下のサンプルデータが作成されます：
+- 開発用デフォルトユーザー（email: `example@example.com`, password: `password`）
 - サンプルユーザー（管理者1名、一般ユーザー101名）
 - サンプルマイクロポスト
 - フォロー関係
+
+**開発用ログイン情報:**
+- Email: `example@example.com`
+- Password: `password`
 
 ### 5. Git Hooksのセットアップ（推奨）
 
@@ -108,6 +113,32 @@ bin/setup
 - データベースの準備（bin/rails db:prepare）
 - ログと一時ファイルのクリア
 - Git hooksのセットアップ
+
+## Dockerでの開発環境
+
+Docker Desktop（またはDocker EngineとCompose v2）が必要です。RubyやNode.jsのホストへのインストールは不要です。
+
+```bash
+bin/docker-dev up --build -d
+bin/docker-dev ps
+```
+
+`bin/docker-dev`は`.ruby-version`からビルド用Rubyバージョンを読み込みます。起動時に依存関係とSQLiteデータベースを準備します。コードはホストと共有され、データベースとアップロード画像は`storage`ボリュームに保存されます。
+
+ブラウザで http://localhost:3000 を開き、ホーム画面の「Sign up now!」から登録できます。別の開発サーバーと併用するときは`PORT=3010 bin/docker-dev up --build -d`を使用し、http://localhost:3010 を開いてください。
+
+```bash
+# サンプルユーザーと投稿を作成
+bin/docker-dev exec web bin/rails db:seed
+# テスト / ログ / 停止
+bin/docker-dev exec web bundle exec rspec
+bin/docker-dev logs -f web
+bin/docker-dev down
+```
+
+サンプルデータ投入後は`example@example.com` / `password`でログインし、投稿一覧を確認できます。Gemfile変更やRuby更新後は`bin/docker-dev up --build -d`を再実行してください。`down`はデータを保持します。`bin/docker-dev down -v`は開発データと依存関係ボリュームを削除するため、初期化するときだけ実行してください。
+
+本番向けの既存`Dockerfile`とは別に、開発用`Dockerfile.dev`を使用します。
 
 ## テストの実行
 

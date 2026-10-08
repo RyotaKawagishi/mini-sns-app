@@ -1,4 +1,5 @@
 class Micropost < ApplicationRecord
+  has_many :likes, dependent: :destroy
   belongs_to :user
   # belongs_to :reply_to_user, class_name: "User", foreign_key: "in_reply_to", optional: true
 

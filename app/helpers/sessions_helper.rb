@@ -11,8 +11,8 @@ module SessionsHelper
   # 永続的セッションのためにユーザーをデータベースに記憶し、かつcookiesを作成
   def remember(user)
     user.remember
-    cookies.permanent.encrypted[:user_id] = user.id
-    cookies.permanent[:remember_token] = user.remember_token
+    cookies.permanent.encrypted[:user_id] = { value: user.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
+    cookies.permanent[:remember_token] = { value: user.remember_token, httponly: true, same_site: :lax, secure: Rails.env.production? }
   end
 
   # 記憶トークンcookieに対応するユーザーを返す
@@ -37,7 +37,7 @@ module SessionsHelper
 
   # アクセスしようとしたURLをsessionに保存する
   def store_location
-    session[:forwarding_url] = request.original_url if request.get?
+    session[:forwarding_url] = request.original_url if (request.get? || request.head?)
   end
 
   # 渡されたユーザーがカレントユーザーであればtrueを返す
