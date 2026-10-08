@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   get "/up", to: "rails/health#show"
  
+  resources :searches, only: [:index]
+
   root "static_pages#home"
 
   get  "/help",    to: "static_pages#help"
