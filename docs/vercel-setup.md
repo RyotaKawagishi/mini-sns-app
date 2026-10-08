@@ -7,6 +7,7 @@
 アプリケーションのソースとプリコンパイル済みassetsをFunctionへ同梱します。
 Rubyの対応バージョンは[公式Ruby runtime](https://vercel.com/docs/functions/runtimes/ruby)を参照してください。
 ローカルとDockerでは`.ruby-version`のRuby 3.3.12を使用し、GemfileはVercelのRuby 3.3.xランタイムを許可します。
+PostgreSQLアダプタはVercelのLinux環境向けビルド済みgemを使用し、ビルド時にlibpq開発ヘッダーを必要としません。
 
 ## Vercelプロジェクト
 
