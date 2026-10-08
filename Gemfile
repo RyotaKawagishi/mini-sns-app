@@ -96,5 +96,8 @@ gem "pundit",          "~> 2.3"
 gem "slim"
 
 group :production do
+  gem "aws-sdk-s3", "~> 1.0", require: false
+  gem "dotenv", "~> 3.0", require: false
+  gem "webrick", "~> 1.8"
   gem "pg", "1.3.5"
 end

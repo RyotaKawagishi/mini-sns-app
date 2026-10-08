@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Compiling assets must never migrate a shared production database.
+SECRET_KEY_BASE_DUMMY=1 RAILS_ENV=production bundle exec rails assets:precompile

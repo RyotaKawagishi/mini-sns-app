@@ -37,7 +37,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = :amazon
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -46,7 +46,7 @@ Rails.application.configure do
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  # config.assume_ssl = true
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
@@ -96,19 +96,25 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
 
-
-  config.force_ssl = true
+  # Vercel has a read-only application directory and no background worker.
+  if ENV["VERCEL"]
+    config.active_job.queue_adapter = :inline
+    config.active_storage.analyzers = []
+    config.active_storage.previewers = []
+  end
 
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.delivery_method = :smtp
-  host = 'https://sample-app-2-o4qk.onrender.com'
-  config.action_mailer.default_url_options = { host: host }
-  ActionMailer::Base.smtp_settings = {
-    :port           => 587,
-    :address        => 'smtp.mailgun.org',
-    :user_name      => ENV['MAILGUN_SMTP_LOGIN'],
-    :password       => ENV['MAILGUN_SMTP_PASSWORD'],
-    :domain         => host,
-    :authentication => :plain,
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch("APP_HOST", "localhost"), protocol: "https"
+  }
+  config.action_mailer.smtp_settings = {
+    port: ENV.fetch("SMTP_PORT", "587").to_i,
+    address: ENV.fetch("SMTP_ADDRESS", "smtp.mailgun.org"),
+    user_name: ENV["SMTP_USERNAME"],
+    password: ENV["SMTP_PASSWORD"],
+    domain: ENV.fetch("APP_HOST", "localhost"),
+    authentication: :plain,
+    enable_starttls_auto: true
   }
 end
