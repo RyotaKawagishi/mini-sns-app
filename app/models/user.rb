@@ -105,9 +105,10 @@ class User < ApplicationRecord
   # ユーザーのステータスフィードを返す
   # @return [ActiveRecord::Relation<Micropost>] フォロー中のユーザー、自分自身、リプライ先のマイクロポストを含むフィード
   def feed
-    part_of_feed = "relationships.follower_id = :id or microposts.user_id = :id or microposts.in_reply_to = :id"
-    Micropost.left_outer_joins(user: :followers)
-             .where(part_of_feed, { id: id }).distinct
+    followed_user_ids = active_relationships.select(:followed_id)
+    Micropost.where(user_id: followed_user_ids)
+             .or(Micropost.where(user_id: id))
+             .or(Micropost.where(in_reply_to: id))
              .includes(:user, :likes, image_attachment: :blob)
   end
 

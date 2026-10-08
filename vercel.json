@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "buildCommand": "bin/vercel-build",
+  "devCommand": "bin/rails server",
+  "installCommand": "bundle install && npm ci",
+  "framework": null,
+  "outputDirectory": "public",
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.rb"
+    }
+  ],
+  "functions": {
+    "api/index.rb": {
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "{app,config,db,lib,public}/**"
+    }
+  },
+  "env": {
+    "RAILS_ENV": "production",
+    "BOOTSNAP_CACHE_DIR": "/tmp/bootsnap"
+  }
+}

@@ -21,17 +21,10 @@ GitHubのSettings → Secrets and variables → Actionsに以下を登録して�
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
 
-## 公開前の未完了項目
+## 本番アプリの設定
 
-ワークフローの追加だけではRailsアプリの本番公開は完了しません。
-公開先とRailsの実行方式を決定したうえで、以下を設定・検証します。
+RailsのHandler、ビルド、公開前のDBマイグレーション、SMTPとS3を実装しています。
+詳細と必須環境変数は[vercel-setup.md](vercel-setup.md)を参照してください。
 
-- Railsのビルドと起動（既存DockerfileはVercel向けには未検証）
-- PostgreSQLの`DATABASE_URL`とマイグレーション手順
-- `RAILS_MASTER_KEY`または本番の`SECRET_KEY_BASE`
-- 画像アップロードの永続ストレージ（現在の本番設定はローカルDisk）
-- 公開URLに合わせたメールURLとSMTP設定（現在はRenderのURL）
-- 本番URLでログイン・投稿・画像・メール送信の動作確認
-
-本番認証情報が未登録の状態ではデプロイの事前確認が失敗します。
-PR #29のワークフロー整備とIssue #21の本番公開完了は区別してください。
+本番認証情報・DB・SMTP・S3・公開URLは未提供です。本番デプロイと画面の動作確認は未実施です。
+PR #28の設定整備とIssue #21の本番公開完了は区別してください。
